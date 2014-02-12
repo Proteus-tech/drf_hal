@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Django settings for drf_hal project.
+Django settings for drf_hal_project project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.6/topics/settings/
@@ -48,9 +48,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'drf_hal.urls'
+ROOT_URLCONF = 'drf_hal_project.urls'
 
-WSGI_APPLICATION = 'drf_hal.wsgi.application'
+WSGI_APPLICATION = 'drf_hal_project.wsgi.application'
 
 
 # Database
