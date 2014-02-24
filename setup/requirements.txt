@@ -1,0 +1,3 @@
+djangorestframework==2.3.12
+dougrain==0.5.1
+simplejson==3.3.3
