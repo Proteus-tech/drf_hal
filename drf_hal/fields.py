@@ -71,7 +71,7 @@ class HalLinksField(Field):
 
         # Return the hyperlink, or error if incorrectly configured.
         try:
-            return self.get_url(obj, view_name, request, format)
+            self_link = self.get_url(obj, view_name, request, format)
         except NoReverseMatch:
             msg = (
                 'Could not resolve URL for hyperlinked relationship using '
@@ -80,6 +80,12 @@ class HalLinksField(Field):
                 '`lookup_field` attribute on this field.'
             )
             raise Exception(msg % view_name)
+
+        return {
+            'self': {
+                'href': self_link
+            }
+        }
 
     def get_url(self, obj, view_name, request, format):
         """
