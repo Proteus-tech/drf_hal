@@ -24,7 +24,9 @@ class HalModelSerializer(ModelSerializer):
         if self.opts.view_name is None:
             self.opts.view_name = self._get_default_view_name(self.opts.model)
 
-        _links = HalLinksField()
+        _links = HalLinksField(
+            view_name=self.opts.view_name
+        )
         _links.initialize(self, '_links')
         self.fields['_links'] = _links
 
@@ -42,26 +44,26 @@ class HalModelSerializer(ModelSerializer):
     def get_pk_field(self, model_field):
         if self.opts.fields and model_field.name in self.opts.fields:
             return self.get_field(model_field)
-
-    def get_related_field(self, model_field, related_model, to_many):
-        """
-        Creates a default instance of a flat relational field.
-        """
-        # TODO: filter queryset using:
-        # .using(db).complex_filter(self.rel.limit_choices_to)
-        kwargs = {
-            'queryset': related_model._default_manager,
-            'view_name': self._get_default_view_name(related_model),
-            'many': to_many
-        }
-
-        if model_field:
-            kwargs['required'] = not(model_field.null or model_field.blank)
-
-        if self.opts.lookup_field:
-            kwargs['lookup_field'] = self.opts.lookup_field
-
-        return self._hyperlink_field_class(**kwargs)
+    #
+    # def get_related_field(self, model_field, related_model, to_many):
+    #     """
+    #     Creates a default instance of a flat relational field.
+    #     """
+    #     # TODO: filter queryset using:
+    #     # .using(db).complex_filter(self.rel.limit_choices_to)
+    #     kwargs = {
+    #         'queryset': related_model._default_manager,
+    #         'view_name': self._get_default_view_name(related_model),
+    #         'many': to_many
+    #     }
+    #
+    #     if model_field:
+    #         kwargs['required'] = not(model_field.null or model_field.blank)
+    #
+    #     if self.opts.lookup_field:
+    #         kwargs['lookup_field'] = self.opts.lookup_field
+    #
+    #     return self._hyperlink_field_class(**kwargs)
 
     def get_identity(self, data):
         """

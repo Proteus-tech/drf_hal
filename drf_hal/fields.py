@@ -95,7 +95,7 @@ class HalLinksField(Field):
             return None
 
         try:
-            return reverse(view_name, kwargs=kwargs, request=request, format=format)
+            return reverse(view_name, kwargs=kwargs)
         except NoReverseMatch:
             pass
 
