@@ -17,3 +17,4 @@ class ChoiceExcludePollSerializer(HalModelSerializer):
 class ChoiceExcludeVotesSerializer(HalModelSerializer):
     class Meta:
         model = Choice
+        exclude = ('votes',)

@@ -20,7 +20,7 @@ class TestChoiceView(TestCase):
         self.assertEqual(content['choice_text'], self.choice.choice_text)
         self.assertEqual(content['votes'], self.choice.votes)
 
-    def test_get_choice_exclude_votes(self):
+    def test_get_choice_exclude_poll(self):
         response = self.client.get('/choice/%s?exclude=poll' % self.choice.id)
         self.assertEqual(response.status_code, 200)
 
@@ -29,4 +29,14 @@ class TestChoiceView(TestCase):
         self.assertEqual(content['choice_text'], self.choice.choice_text)
         self.assertEqual(content['votes'], self.choice.votes)
         self.assertNotIn('poll', content['_links'])
+
+    def test_get_choice_exclude_votes(self):
+        response = self.client.get('/choice/%s?exclude=votes' % self.choice.id)
+        self.assertEqual(response.status_code, 200)
+
+        content = simplejson.loads(response.content)
+        self.assertEqual(content['_links']['self']['href'], 'http://testserver/choice/%s' % self.choice.id)
+        self.assertEqual(content['_links']['poll']['href'], 'http://testserver/poll/%s' % self.poll.id)
+        self.assertEqual(content['choice_text'], self.choice.choice_text)
+        self.assertNotIn('votes', content)
 
