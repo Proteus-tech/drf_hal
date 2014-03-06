@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import patterns, url
-from rest_framework.generics import RetrieveUpdateDestroyAPIView
-from sample_app.models import Choice
-from sample_app.serializers import ChoiceSerializer
+from sample_app.views import ChoiceRetrieveUpdateDestroyAPIView
 
 
 urlpatterns = patterns('',
-    url('^/(?P<pk>\d+)$', RetrieveUpdateDestroyAPIView.as_view(model=Choice, serializer_class=ChoiceSerializer),
-        name='choice-detail')
+    url('^/(?P<pk>\d+)$', ChoiceRetrieveUpdateDestroyAPIView.as_view(), name='choice-detail')
 )
 

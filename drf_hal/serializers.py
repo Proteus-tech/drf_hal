@@ -33,7 +33,8 @@ class HalModelSerializer(ModelSerializer):
 
         _links = HalLinksField(
             view_name=self.opts.view_name,
-            additional_links=self.additional_links
+            additional_links=self.additional_links,
+            exclude=self.opts.exclude
         )
         _links.initialize(self, '_links')
         self.fields['_links'] = _links

@@ -25,6 +25,7 @@ class HalLinksField(Field):
             raise ValueError(msg)
 
         self.additional_links = kwargs.pop('additional_links', {})
+        self.exclude = kwargs.pop('exclude', ())
 
         self.format = kwargs.pop('format', None)
         lookup_field = kwargs.pop('lookup_field', None)
@@ -72,10 +73,8 @@ class HalLinksField(Field):
                 'href': self_link
             }
         }
-        for key, field in self.additional_links.items():
-            ret[key] = {
-                'href': field.field_to_native(obj, key)
-            }
+        [ret.update({key: {'href': field.field_to_native(obj, key)}}) for key, field in self.additional_links.items()
+         if key not in self.exclude]
         return ret
 
     def get_url(self, obj, view_name, request, format):
