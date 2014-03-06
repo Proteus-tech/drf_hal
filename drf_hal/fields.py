@@ -21,8 +21,10 @@ class HalLinksField(Field):
         try:
             self.view_name = kwargs.pop('view_name')
         except KeyError:
-            msg = "HyperlinkedIdentityField requires 'view_name' argument"
+            msg = "HalLinksField requires 'view_name' argument"
             raise ValueError(msg)
+
+        self.additional_links = kwargs.pop('additional_links', {})
 
         self.format = kwargs.pop('format', None)
         lookup_field = kwargs.pop('lookup_field', None)
@@ -81,11 +83,16 @@ class HalLinksField(Field):
             )
             raise Exception(msg % view_name)
 
-        return {
+        ret = {
             'self': {
                 'href': self_link
             }
         }
+        for key, field in self.additional_links.items():
+            ret[key] = {
+                'href': field.field_to_native(obj, key)
+            }
+        return ret
 
     def get_url(self, obj, view_name, request, format):
         """

@@ -7,4 +7,5 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
     url(r'^choice', include('sample_app.choice_urls')),
+    url(r'^poll', include('sample_app.poll_urls')),
 )
