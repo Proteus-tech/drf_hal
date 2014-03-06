@@ -42,7 +42,12 @@ INSTALLED_APPS = (
     'rest_framework',
 
     'sample_app',
+
+    # testing
+    'django_nose',
 )
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
