@@ -30,22 +30,6 @@ class HalLinksField(Field):
         lookup_field = kwargs.pop('lookup_field', None)
         self.lookup_field = lookup_field or self.lookup_field
 
-        # These are pending deprecation
-        if 'pk_url_kwarg' in kwargs:
-            msg = 'pk_url_kwarg is pending deprecation. Use lookup_field instead.'
-            warnings.warn(msg, PendingDeprecationWarning, stacklevel=2)
-        if 'slug_url_kwarg' in kwargs:
-            msg = 'slug_url_kwarg is pending deprecation. Use lookup_field instead.'
-            warnings.warn(msg, PendingDeprecationWarning, stacklevel=2)
-        if 'slug_field' in kwargs:
-            msg = 'slug_field is pending deprecation. Use lookup_field instead.'
-            warnings.warn(msg, PendingDeprecationWarning, stacklevel=2)
-
-        self.slug_field = kwargs.pop('slug_field', self.slug_field)
-        default_slug_kwarg = self.slug_url_kwarg or self.slug_field
-        self.pk_url_kwarg = kwargs.pop('pk_url_kwarg', self.pk_url_kwarg)
-        self.slug_url_kwarg = kwargs.pop('slug_url_kwarg', default_slug_kwarg)
-
         super(HalLinksField, self).__init__(*args, **kwargs)
 
     def field_to_native(self, obj, field_name):
@@ -112,24 +96,6 @@ class HalLinksField(Field):
             return reverse(view_name, kwargs=kwargs, request=request, format=format)
         except NoReverseMatch:
             pass
-
-        if self.pk_url_kwarg != 'pk':
-            # Only try pk lookup if it has been explicitly set.
-            # Otherwise, the default `lookup_field = 'pk'` has us covered.
-            kwargs = {self.pk_url_kwarg: obj.pk}
-            try:
-                return reverse(view_name, kwargs=kwargs, request=request, format=format)
-            except NoReverseMatch:
-                pass
-
-        slug = getattr(obj, self.slug_field, None)
-        if slug:
-            # Only use slug lookup if a slug field exists on the model
-            kwargs = {self.slug_url_kwarg: slug}
-            try:
-                return reverse(view_name, kwargs=kwargs, request=request, format=format)
-            except NoReverseMatch:
-                pass
 
         raise NoReverseMatch()
 
