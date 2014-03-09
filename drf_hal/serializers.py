@@ -8,10 +8,10 @@ from rest_framework.compat import get_concrete_model
 from rest_framework.fields import Field
 from rest_framework.relations import HyperlinkedRelatedField
 from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializerOptions, _resolve_model
-from drf_hal.fields import HalLinksField, HalEmbeddedField
+from drf_hal.fields import HALLinksField, HALEmbeddedField
 
 
-class HalModelSerializer(ModelSerializer):
+class HALModelSerializer(ModelSerializer):
     """
     A subclass of ModelSerializer that follows the HAL specs (http://stateless.co/hal_specification.html).
     """
@@ -28,12 +28,12 @@ class HalModelSerializer(ModelSerializer):
         self.additional_links = {}
         self.embedded_fields = {}
 
-        super(HalModelSerializer, self).__init__(*args, **kwargs)
+        super(HALModelSerializer, self).__init__(*args, **kwargs)
 
         if self.opts.view_name is None:
             self.opts.view_name = self._get_default_view_name(self.opts.model)
 
-        _links = HalLinksField(
+        _links = HALLinksField(
             view_name=self.opts.view_name,
             additional_links=self.additional_links,
         )
@@ -41,7 +41,7 @@ class HalModelSerializer(ModelSerializer):
         self.fields['_links'] = _links
 
         if self.embedded_fields:
-            _embedded = HalEmbeddedField(
+            _embedded = HALEmbeddedField(
                 embedded_fields=self.embedded_fields,
             )
             _embedded.initialize(self, '_embedded')

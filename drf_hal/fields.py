@@ -5,7 +5,7 @@ from rest_framework.fields import Field
 from rest_framework.reverse import reverse
 
 
-class HalLinksField(Field):
+class HALLinksField(Field):
     """
     Represents the instance, or a property on the instance, using hyperlinking.
     """
@@ -16,7 +16,7 @@ class HalLinksField(Field):
         try:
             self.view_name = kwargs.pop('view_name')
         except KeyError:
-            msg = "HalLinksField requires 'view_name' argument"
+            msg = "HALLinksField requires 'view_name' argument"
             raise ValueError(msg)
 
         self.additional_links = kwargs.pop('additional_links', {})
@@ -26,7 +26,7 @@ class HalLinksField(Field):
         lookup_field = kwargs.pop('lookup_field', None)
         self.lookup_field = lookup_field or self.lookup_field
 
-        super(HalLinksField, self).__init__(*args, **kwargs)
+        super(HALLinksField, self).__init__(*args, **kwargs)
 
     def field_to_native(self, obj, field_name):
         request = self.context.get('request', None)
@@ -93,12 +93,12 @@ class HalLinksField(Field):
         raise NoReverseMatch()
 
 
-class HalEmbeddedField(Field):
+class HALEmbeddedField(Field):
 
     def __init__(self, *args, **kwargs):
         self.embedded_fields = kwargs.pop('embedded_fields', {})
 
-        super(HalEmbeddedField, self).__init__(*args, **kwargs)
+        super(HALEmbeddedField, self).__init__(*args, **kwargs)
 
     def field_to_native(self, obj, field_name):
         ret = {}
