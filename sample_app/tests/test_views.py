@@ -49,7 +49,7 @@ class TestChoiceView(TestCase):
         self.assertEqual(content['choice_text'], self.choice.choice_text)
         self.assertEqual(content['votes'], self.choice.votes)
         self.assertEqual(content['_embedded']['poll']['question'], self.poll.question)
-        # self.assertEqual(content['poll']['pub_date'], self.poll.pub_date)
+        # self.assertEqual(content['_embedded']['poll']['pub_date'], self.poll.pub_date.isoformat())
         self.assertEqual(content['_embedded']['poll']['_links']['self']['href'], 'http://testserver/poll/%s' % self.poll.id)
         self.assertNotIn('poll', content['_links'])
 
