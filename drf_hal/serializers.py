@@ -36,7 +36,6 @@ class HalModelSerializer(ModelSerializer):
         _links = HalLinksField(
             view_name=self.opts.view_name,
             additional_links=self.additional_links,
-            exclude=self.opts.exclude
         )
         _links.initialize(self, '_links')
         self.fields['_links'] = _links
@@ -44,7 +43,6 @@ class HalModelSerializer(ModelSerializer):
         if self.embedded_fields:
             _embedded = HalEmbeddedField(
                 embedded_fields=self.embedded_fields,
-                exclude=self.opts.exclude
             )
             _embedded.initialize(self, '_embedded')
             self.fields['_embedded'] = _embedded
@@ -98,8 +96,10 @@ class HalModelSerializer(ModelSerializer):
         field.initialize(parent=self, field_name=field_name)
         self.additional_links[field_name] = field
 
-    def add_field_to_embedded(self, field_name, field):
+    def add_field_to_embedded(self, field_name, field, has_through_model=False):
         field.initialize(parent=self, field_name=field_name)
+        if has_through_model:
+            field.read_only = True
         self.embedded_fields[field_name] = field
 
     def get_default_fields(self, base_fields):
@@ -182,15 +182,9 @@ class HalModelSerializer(ModelSerializer):
                 has_through_model = True
 
             if nested:
-                self.add_field_to_embedded(accessor_name, self.get_nested_field(None, related_model, to_many))
+                self.add_field_to_embedded(accessor_name, self.get_nested_field(None, related_model, to_many), has_through_model)
             else:
-                self.add_field_to_embedded(accessor_name, self.get_related_field(None, related_model, to_many))
-
-            if field:
-                if has_through_model:
-                    field.read_only = True
-
-                ret[accessor_name] = field
+                self.add_field_to_embedded(accessor_name, self.get_related_field(None, related_model, to_many), has_through_model)
 
         # Add the `read_only` flag to any fields that have bee specified
         # in the `read_only_fields` option
@@ -253,6 +247,8 @@ class HalModelSerializer(ModelSerializer):
             assert isinstance(self.opts.exclude, (list, tuple)), '`exclude` must be a list or tuple'
             for key in self.opts.exclude:
                 ret.pop(key, None)
+                self.additional_links.pop(key, None)
+                self.embedded_fields.pop(key, None)
 
         for key, field in ret.items():
             field.initialize(parent=self, field_name=key)

@@ -68,8 +68,7 @@ class HalLinksField(Field):
                 'href': self_link
             }
         }
-        [ret.update({key: {'href': field.field_to_native(obj, key)}}) for key, field in self.additional_links.items()
-         if key not in self.exclude]
+        [ret.update({key: {'href': field.field_to_native(obj, key)}}) for key, field in self.additional_links.items()]
         return ret
 
     def get_url(self, obj, view_name, request, format):
@@ -98,13 +97,11 @@ class HalEmbeddedField(Field):
 
     def __init__(self, *args, **kwargs):
         self.embedded_fields = kwargs.pop('embedded_fields', {})
-        self.exclude = kwargs.pop('exclude', ())
 
         super(HalEmbeddedField, self).__init__(*args, **kwargs)
 
     def field_to_native(self, obj, field_name):
         ret = {}
-        [ret.update({key: field.field_to_native(obj, key)}) for key, field in self.embedded_fields.items()
-         if key not in self.exclude]
+        [ret.update({key: field.field_to_native(obj, key)}) for key, field in self.embedded_fields.items()]
         return ret
 
