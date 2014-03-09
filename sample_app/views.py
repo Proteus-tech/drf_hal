@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from sample_app.models import Choice
-from sample_app.serializers import ChoiceSerializer, ChoiceExcludePollSerializer, ChoiceExcludeVotesSerializer
+from sample_app.serializers import ChoiceSerializer, ChoiceExcludePollSerializer, ChoiceExcludeVotesSerializer, \
+    ChoiceEmbedPollSerializer
 
 
 class ChoiceRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -14,5 +15,7 @@ class ChoiceRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
             if exclude == 'poll':
                 return ChoiceExcludePollSerializer
             return ChoiceExcludeVotesSerializer
+        if query_params.get('embed'):
+            return ChoiceEmbedPollSerializer
         return ChoiceSerializer
 

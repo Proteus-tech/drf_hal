@@ -40,3 +40,16 @@ class TestChoiceView(TestCase):
         self.assertEqual(content['choice_text'], self.choice.choice_text)
         self.assertNotIn('votes', content)
 
+    def test_get_choice_embed_poll(self):
+        response = self.client.get('/choice/%s?embed=poll' % self.choice.id)
+        self.assertEqual(response.status_code, 200)
+
+        content = simplejson.loads(response.content)
+        self.assertEqual(content['_links']['self']['href'], 'http://testserver/choice/%s' % self.choice.id)
+        self.assertEqual(content['choice_text'], self.choice.choice_text)
+        self.assertEqual(content['votes'], self.choice.votes)
+        self.assertEqual(content['_embedded']['poll']['question'], self.poll.question)
+        # self.assertEqual(content['poll']['pub_date'], self.poll.pub_date)
+        self.assertEqual(content['_embedded']['poll']['_links']['self']['href'], 'http://testserver/poll/%s' % self.poll.id)
+        self.assertNotIn('poll', content['_links'])
+

@@ -12,11 +12,6 @@ class HalLinksField(Field):
     lookup_field = 'pk'
     read_only = True
 
-    # These are all pending deprecation
-    pk_url_kwarg = 'pk'
-    slug_field = 'slug'
-    slug_url_kwarg = None  # Defaults to same as `slug_field` unless overridden
-
     def __init__(self, *args, **kwargs):
         try:
             self.view_name = kwargs.pop('view_name')
@@ -100,4 +95,16 @@ class HalLinksField(Field):
 
 
 class HalEmbeddedField(Field):
-    pass
+
+    def __init__(self, *args, **kwargs):
+        self.embedded_fields = kwargs.pop('embedded_fields', {})
+        self.exclude = kwargs.pop('exclude', ())
+
+        super(HalEmbeddedField, self).__init__(*args, **kwargs)
+
+    def field_to_native(self, obj, field_name):
+        ret = {}
+        [ret.update({key: field.field_to_native(obj, key)}) for key, field in self.embedded_fields.items()
+         if key not in self.exclude]
+        return ret
+

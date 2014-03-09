@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import copy
 import inspect
 import warnings
 from django.utils.datastructures import SortedDict
@@ -25,6 +26,7 @@ class HalModelSerializer(ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         self.additional_links = {}
+        self.embedded_fields = {}
 
         super(HalModelSerializer, self).__init__(*args, **kwargs)
 
@@ -38,6 +40,14 @@ class HalModelSerializer(ModelSerializer):
         )
         _links.initialize(self, '_links')
         self.fields['_links'] = _links
+
+        if self.embedded_fields:
+            _embedded = HalEmbeddedField(
+                embedded_fields=self.embedded_fields,
+                exclude=self.opts.exclude
+            )
+            _embedded.initialize(self, '_embedded')
+            self.fields['_embedded'] = _embedded
 
     def _get_default_view_name(self, model):
         """
@@ -84,11 +94,15 @@ class HalModelSerializer(ModelSerializer):
         except AttributeError:
             return None
 
-    def add_field_to_links(self, model_field, field):
-        field.initialize(self, model_field.name)
-        self.additional_links[model_field.name] = field
+    def add_field_to_links(self, field_name, field):
+        field.initialize(parent=self, field_name=field_name)
+        self.additional_links[field_name] = field
 
-    def get_default_fields(self):
+    def add_field_to_embedded(self, field_name, field):
+        field.initialize(parent=self, field_name=field_name)
+        self.embedded_fields[field_name] = field
+
+    def get_default_fields(self, base_fields):
         """
         Return all the fields that should be serialized for the model.
         """
@@ -127,29 +141,13 @@ class HalModelSerializer(ModelSerializer):
                     has_through_model = True
 
             if model_field.rel and nested:
-                if len(inspect.getargspec(self.get_nested_field).args) == 2:
-                    warnings.warn(
-                        'The `get_nested_field(model_field)` call signature '
-                        'is due to be deprecated. '
-                        'Use `get_nested_field(model_field, related_model, '
-                        'to_many) instead',
-                        PendingDeprecationWarning
-                    )
-                    field = self.get_nested_field(model_field)
-                else:
-                    field = self.get_nested_field(model_field, related_model, to_many)
+                self.add_field_to_embedded(model_field.name, self.get_nested_field(model_field, related_model, to_many))
+            elif model_field.rel and model_field.name in base_fields:
+                key = model_field.name
+                self.add_field_to_embedded(key, base_fields[key])
+                base_fields.pop(key)
             elif model_field.rel:
-                if len(inspect.getargspec(self.get_nested_field).args) == 3:
-                    warnings.warn(
-                        'The `get_related_field(model_field, to_many)` call '
-                        'signature is due to be deprecated. '
-                        'Use `get_related_field(model_field, related_model, '
-                        'to_many) instead',
-                        PendingDeprecationWarning
-                    )
-                    self.add_field_to_links(model_field, self.get_related_field(model_field, to_many=to_many))
-                else:
-                    self.add_field_to_links(model_field, self.get_related_field(model_field, related_model, to_many))
+                self.add_field_to_links(model_field.name, self.get_related_field(model_field, related_model, to_many))
             else:
                 field = self.get_field(model_field)
 
@@ -184,9 +182,9 @@ class HalModelSerializer(ModelSerializer):
                 has_through_model = True
 
             if nested:
-                field = self.get_nested_field(None, related_model, to_many)
+                self.add_field_to_embedded(accessor_name, self.get_nested_field(None, related_model, to_many))
             else:
-                field = self.get_related_field(None, related_model, to_many)
+                self.add_field_to_embedded(accessor_name, self.get_related_field(None, related_model, to_many))
 
             if field:
                 if has_through_model:
@@ -219,6 +217,45 @@ class HalModelSerializer(ModelSerializer):
                 "on serializer '%s'." %
                 (field_name, self.__class__.__name__))
             ret[field_name].write_only = True
+
+        return ret
+
+    def get_fields(self):
+        """
+        Returns the complete set of fields for the object as a dict.
+
+        This will be the set of any explicitly declared fields,
+        plus the set of fields returned by get_default_fields().
+        """
+        ret = SortedDict()
+
+        # Get the explicitly declared fields
+        base_fields = copy.deepcopy(self.base_fields)
+        for key, field in base_fields.items():
+            ret[key] = field
+
+        # Add in the default fields
+        default_fields = self.get_default_fields(ret)
+        for key, val in default_fields.items():
+            if key not in ret:
+                ret[key] = val
+
+        # If 'fields' is specified, use those fields, in that order.
+        if self.opts.fields:
+            assert isinstance(self.opts.fields, (list, tuple)), '`fields` must be a list or tuple'
+            new = SortedDict()
+            for key in self.opts.fields:
+                new[key] = ret[key]
+            ret = new
+
+        # Remove anything in 'exclude'
+        if self.opts.exclude:
+            assert isinstance(self.opts.exclude, (list, tuple)), '`exclude` must be a list or tuple'
+            for key in self.opts.exclude:
+                ret.pop(key, None)
+
+        for key, field in ret.items():
+            field.initialize(parent=self, field_name=key)
 
         return ret
 
