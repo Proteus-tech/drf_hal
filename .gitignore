@@ -1,2 +1,4 @@
 .idea
 .coverage
+
+drf_hal_project/db.sqlite3
