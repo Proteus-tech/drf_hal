@@ -96,3 +96,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'drf_hal.renderers.HALRenderer',
+    )
+}
+
