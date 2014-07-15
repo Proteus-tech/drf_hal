@@ -2,6 +2,7 @@
 from datetime import date
 from django.test import TestCase
 import simplejson
+from dougrain import Document
 from sample_app.models import Poll, Choice
 
 
@@ -15,41 +16,44 @@ class TestChoiceView(TestCase):
         self.assertEqual(response.status_code, 200)
 
         content = simplejson.loads(response.content)
-        self.assertEqual(content['_links']['self']['href'], 'http://testserver/choice/%s' % self.choice.id)
-        self.assertEqual(content['_links']['poll']['href'], 'http://testserver/poll/%s' % self.poll.id)
-        self.assertEqual(content['choice_text'], self.choice.choice_text)
-        self.assertEqual(content['votes'], self.choice.votes)
+        doc = Document.from_object(content)
+        self.assertEqual(doc.links['self'].url(), 'http://testserver/choice/%s' % self.choice.id)
+        self.assertEqual(doc.links['poll'].url(), 'http://testserver/poll/%s' % self.poll.id)
+        self.assertEqual(doc.properties['choice_text'], self.choice.choice_text)
+        self.assertEqual(doc.properties['votes'], self.choice.votes)
 
     def test_get_choice_exclude_poll(self):
         response = self.client.get('/choice/%s?exclude=poll' % self.choice.id)
         self.assertEqual(response.status_code, 200)
 
         content = simplejson.loads(response.content)
-        self.assertEqual(content['_links']['self']['href'], 'http://testserver/choice/%s' % self.choice.id)
-        self.assertEqual(content['choice_text'], self.choice.choice_text)
-        self.assertEqual(content['votes'], self.choice.votes)
-        self.assertNotIn('poll', content['_links'])
+        doc = Document.from_object(content)
+        self.assertEqual(doc.links['self'].url(), 'http://testserver/choice/%s' % self.choice.id)
+        self.assertNotIn('poll', doc.links)
+        self.assertEqual(doc.properties['choice_text'], self.choice.choice_text)
+        self.assertEqual(doc.properties['votes'], self.choice.votes)
 
     def test_get_choice_exclude_votes(self):
         response = self.client.get('/choice/%s?exclude=votes' % self.choice.id)
         self.assertEqual(response.status_code, 200)
 
         content = simplejson.loads(response.content)
-        self.assertEqual(content['_links']['self']['href'], 'http://testserver/choice/%s' % self.choice.id)
-        self.assertEqual(content['_links']['poll']['href'], 'http://testserver/poll/%s' % self.poll.id)
-        self.assertEqual(content['choice_text'], self.choice.choice_text)
-        self.assertNotIn('votes', content)
+        doc = Document.from_object(content)
+        self.assertEqual(doc.links['self'].url(), 'http://testserver/choice/%s' % self.choice.id)
+        self.assertEqual(doc.links['poll'].url(), 'http://testserver/poll/%s' % self.poll.id)
+        self.assertEqual(doc.properties['choice_text'], self.choice.choice_text)
+        self.assertNotIn('votes', doc.properties)
 
     def test_get_choice_embed_poll(self):
         response = self.client.get('/choice/%s?embed=poll' % self.choice.id)
         self.assertEqual(response.status_code, 200)
 
         content = simplejson.loads(response.content)
-        self.assertEqual(content['_links']['self']['href'], 'http://testserver/choice/%s' % self.choice.id)
-        self.assertEqual(content['choice_text'], self.choice.choice_text)
-        self.assertEqual(content['votes'], self.choice.votes)
-        self.assertEqual(content['_embedded']['poll']['question'], self.poll.question)
-        # self.assertEqual(content['_embedded']['poll']['pub_date'], self.poll.pub_date.isoformat())
-        self.assertEqual(content['_embedded']['poll']['_links']['self']['href'], 'http://testserver/poll/%s' % self.poll.id)
-        self.assertNotIn('poll', content['_links'])
+        doc = Document.from_object(content)
+        self.assertEqual(doc.links['self'].url(), 'http://testserver/choice/%s' % self.choice.id)
+        self.assertNotIn('poll', doc.links)
+        self.assertEqual(doc.embedded['poll'].properties['question'], self.poll.question)
+        self.assertEqual(doc.embedded['poll'].url(), 'http://testserver/poll/%s' % self.poll.id)
+        self.assertEqual(doc.properties['choice_text'], self.choice.choice_text)
+        self.assertEqual(doc.properties['votes'], self.choice.votes)
 
