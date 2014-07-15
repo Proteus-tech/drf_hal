@@ -62,3 +62,16 @@ class TestChoiceView(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/hal+json')
 
+
+class TestPollView(TestCase):
+    def setUp(self):
+        self.poll = Poll.objects.create(question='What is your favorite food?', pub_date=date(2014, 1, 3))
+
+    def test_get_poll_view(self):
+        response = self.client.get('/poll/%s' % self.poll.id)
+        self.assertEqual(response.status_code, 200)
+
+        content = simplejson.loads(response.content)
+        doc = Document.from_object(content)
+        self.assertEqual(doc.links['self'].url(), 'http://testserver/poll/%s' % self.poll.id)
+

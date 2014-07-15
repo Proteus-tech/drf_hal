@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import patterns, url
-from rest_framework.generics import RetrieveUpdateDestroyAPIView
-from sample_app.models import Poll
+from sample_app.views import PollRetrieveUpdateDestroyAPIView
 
 
 urlpatterns = patterns('',
-   url('^/(?P<pk>\d+)$', RetrieveUpdateDestroyAPIView.as_view(model=Poll),
+   url('^/(?P<pk>\d+)$', PollRetrieveUpdateDestroyAPIView.as_view(),
        name='poll-detail')
 )
 
