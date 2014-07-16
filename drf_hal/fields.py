@@ -34,10 +34,10 @@ class HALLinksField(Field):
         view_name = self.view_name
 
         if request is None:
-            warnings.warn("Using `HyperlinkedIdentityField` without including the "
-                          "request in the serializer context is deprecated. "
+            warnings.warn("Using `HALLinksField` without including the "
+                          "request in the serializer context is not allowed. "
                           "Add `context={'request': request}` when instantiating the serializer.",
-                          DeprecationWarning, stacklevel=4)
+                          RuntimeWarning, stacklevel=4)
 
         # By default use whatever format is given for the current context
         # unless the target is a different type to the source.

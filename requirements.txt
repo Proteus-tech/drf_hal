@@ -4,3 +4,4 @@ simplejson>=3.3.3
 coverage>=3.7.1
 django-nose>=1.2
 dougrain>=0.5.1
+mock==1.0.1
