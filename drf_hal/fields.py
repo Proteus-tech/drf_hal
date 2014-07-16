@@ -2,7 +2,7 @@
 import warnings
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework.fields import Field
-from rest_framework.reverse import reverse
+from rest_framework import reverse
 
 
 class HALLinksField(Field):
@@ -86,7 +86,7 @@ class HALLinksField(Field):
             return None
 
         try:
-            return reverse(view_name, kwargs=kwargs, request=request, format=format)
+            return reverse.reverse(view_name, kwargs=kwargs, request=request, format=format)
         except NoReverseMatch:
             pass
 
