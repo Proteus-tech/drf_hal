@@ -30,3 +30,17 @@ class ChoiceEmbedPollSerializer(HALModelSerializer):
 
     class Meta:
         model = Choice
+
+
+class ChoiceFieldsPollSerializer(HALModelSerializer):
+
+    class Meta:
+        model = Choice
+        fields = ('id', 'choice_text',)
+
+
+class ChoiceLookupFieldPollSerializer(HALModelSerializer):
+
+    class Meta:
+        model = Choice
+        lookup_field = 'pk'

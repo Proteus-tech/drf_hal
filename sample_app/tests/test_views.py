@@ -57,6 +57,14 @@ class TestChoiceView(TestCase):
         self.assertEqual(doc.properties['choice_text'], self.choice.choice_text)
         self.assertEqual(doc.properties['votes'], self.choice.votes)
 
+    def test_get_choice_with_fields(self):
+        response = self.client.get('/choice/%s?fields=true' % self.choice.id)
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_choice_with_lookup_field(self):
+        response = self.client.get('/choice/%s?lookup_field=true' % self.choice.id)
+        self.assertEqual(response.status_code, 200)
+
     def test_get_choice_view_has_json_hal_content_type(self):
         response = self.client.get('/choice/%s' % self.choice.id)
         self.assertEqual(response.status_code, 200)

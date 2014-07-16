@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import copy
-import inspect
-import warnings
 from django.utils.datastructures import SortedDict
 from django.db import models
 from rest_framework.compat import get_concrete_model
@@ -88,7 +86,7 @@ class HALModelSerializer(ModelSerializer):
         We need to override the default, to use the _links as the identity.
         """
         try:
-            return data.get('_links', None) and data['links'].get('self') and data['links']['self'].get('href')
+            return data.get('_links', None) and data['_links'].get('self') and data['_links']['self'].get('href')
         except AttributeError:
             return None
 
