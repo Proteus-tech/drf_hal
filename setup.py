@@ -14,7 +14,7 @@ setup(
     author_email='team@proteus-tech.com',
     url='http://proteus-tech.com',
     long_description=read('README.md'),
-    install_requires=['django>=1.6.2', 'djangorestframework>=2.3.12', 'simplejson>=3.3.3'],
+    install_requires=['djangorestframework>=2.3.12'],
     packages=['drf_hal'],
 )
 
