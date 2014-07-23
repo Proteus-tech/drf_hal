@@ -33,6 +33,7 @@ class HALModelSerializer(ModelSerializer):
 
         _links = HALLinksField(
             view_name=self.opts.view_name,
+            lookup_field=self.opts.lookup_field,
             additional_links=self.additional_links,
         )
         _links.initialize(self, '_links')

@@ -68,7 +68,6 @@ class HALLinksField(Field):
                 'href': self_link
             }
         }
-        print self.additional_links
         [ret.update({key: {'href': field.field_to_native(obj, key)}}) for key, field in self.additional_links.items()]
         return ret
 
