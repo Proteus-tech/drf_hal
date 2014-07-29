@@ -92,4 +92,10 @@ class TestPollChoiceView(TestCase):
     def test_get_poll_choice_view(self):
         response = self.client.get('/poll/%s/choice/%s' % (self.poll.id, self.choice.id))
         self.assertEqual(response.status_code, 200)
+        content = simplejson.loads(response.content)
+        doc = Document.from_object(content)
+        self.assertEqual(doc.links['self'].url(), 'http://testserver/poll/%s/choice/%s' % (self.poll.id, self.choice.id))
+        self.assertEqual(doc.links['poll'].url(), 'http://testserver/poll/%s' % self.poll.id)
+        self.assertEqual(doc.properties['choice_text'], self.choice.choice_text)
+        self.assertEqual(doc.properties['votes'], 0)
 
