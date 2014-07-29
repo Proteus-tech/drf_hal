@@ -8,6 +8,13 @@ class PollSerializer(HALModelSerializer):
         model = Poll
 
 
+class PollChoiceSerializer(HALModelSerializer):
+    class Meta:
+        model = Choice
+        lookup_field = ('pk', 'poll__pk')
+        view_name = 'poll-choice-detail'
+
+
 class ChoiceSerializer(HALModelSerializer):
     class Meta:
         model = Choice

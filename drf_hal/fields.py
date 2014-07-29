@@ -78,8 +78,21 @@ class HALLinksField(Field):
         May raise a `NoReverseMatch` if the `view_name` and `lookup_field`
         attributes are not configured to correctly match the URL conf.
         """
-        lookup_field = getattr(obj, self.lookup_field, None)
-        kwargs = {self.lookup_field: lookup_field}
+        if isinstance(self.lookup_field, tuple):
+            lookup_fields = self.lookup_field
+            kwargs = {}
+            for lookup_field in lookup_fields:
+                split_lookup_field = lookup_field.split('__')
+                if len(split_lookup_field) > 1:
+                    value = obj
+                    for field in split_lookup_field:
+                        value = getattr(value, field, None)
+                    kwargs[lookup_field] = value
+                else:
+                    kwargs[lookup_field] = getattr(obj, lookup_field, None)
+        else:
+            lookup_field = getattr(obj, self.lookup_field, None)
+            kwargs = {self.lookup_field: lookup_field}
 
         # Handle unsaved object case
         if lookup_field is None:

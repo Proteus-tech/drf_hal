@@ -2,7 +2,8 @@
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from sample_app.models import Choice, Poll
 from sample_app.serializers import ChoiceSerializer, ChoiceExcludePollSerializer, ChoiceExcludeVotesSerializer, \
-    ChoiceEmbedPollSerializer, PollSerializer, ChoiceFieldsPollSerializer, ChoiceLookupFieldPollSerializer
+    ChoiceEmbedPollSerializer, PollSerializer, ChoiceFieldsPollSerializer, ChoiceLookupFieldPollSerializer, \
+    PollChoiceSerializer
 
 
 class ChoiceRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -29,4 +30,9 @@ class PollRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
     def get_serializer_class(self):
         return PollSerializer
+
+
+class PollChoiceRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    model = Choice
+    serializer_class = PollChoiceSerializer
 

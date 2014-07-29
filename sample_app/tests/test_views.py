@@ -83,3 +83,13 @@ class TestPollView(TestCase):
         doc = Document.from_object(content)
         self.assertEqual(doc.links['self'].url(), 'http://testserver/poll/%s' % self.poll.id)
 
+
+class TestPollChoiceView(TestCase):
+    def setUp(self):
+        self.poll = Poll.objects.create(question='What is your favorite food?', pub_date=date(2014, 1, 3))
+        self.choice = Choice.objects.create(poll=self.poll, choice_text='Sushi')
+
+    def test_get_poll_choice_view(self):
+        response = self.client.get('/poll/%s/choice/%s' % (self.poll.id, self.choice.id))
+        self.assertEqual(response.status_code, 200)
+
