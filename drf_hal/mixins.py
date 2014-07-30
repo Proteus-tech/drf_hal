@@ -30,7 +30,6 @@ class MultipleLookupFieldsMixin(object):
                 (self.__class__.__name__, ', '.join(self.lookup_field))
             )
 
-        print filter_kwargs
         obj = get_object_or_404(queryset, **filter_kwargs)
 
         # May raise a permission denied

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.reverse import reverse
 from drf_hal.mixins import MultipleLookupFieldsMixin
 from sample_app.models import Choice, Poll
 from sample_app.serializers import ChoiceSerializer, ChoiceExcludePollSerializer, ChoiceExcludeVotesSerializer, \
@@ -37,4 +38,13 @@ class PollChoiceRetrieveUpdateDestroyAPIView(MultipleLookupFieldsMixin, Retrieve
     model = Choice
     lookup_field = ('poll__pk', 'pk')
     serializer_class = PollChoiceSerializer
+
+
+class PollChoiceCreateAPIView(CreateAPIView):
+    model = Choice
+    serializer_class = PollChoiceSerializer
+
+    def create(self, request, *args, **kwargs):
+        request.DATA['poll'] = reverse('poll-detail', kwargs={'pk': kwargs['poll__pk']}, request=request)
+        return super(PollChoiceCreateAPIView, self).create(request, *args, **kwargs)
 

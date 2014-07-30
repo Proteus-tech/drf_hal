@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import copy
+from django.core.exceptions import ValidationError
 from django.utils.datastructures import SortedDict
 from django.db import models
 from rest_framework.compat import get_concrete_model
@@ -250,4 +251,51 @@ class HALModelSerializer(ModelSerializer):
             field.initialize(parent=self, field_name=key)
 
         return ret
+
+    def restore_initialize_field(self, field_name, field, data, files, reverted_data):
+        field.initialize(parent=self, field_name=field_name)
+        try:
+            field.field_from_native(data, files, field_name, reverted_data)
+        except ValidationError as err:
+            self._errors[field_name] = list(err.messages)
+
+    def restore_fields(self, data, files):
+        """
+        Core of deserialization, together with `restore_object`.
+        Converts a dictionary of data into a dictionary of deserialized fields.
+        """
+        reverted_data = {}
+        copy_data = data.copy()
+
+        if data is not None and not isinstance(data, dict):
+            self._errors['non_field_errors'] = ['Invalid data']
+            return None
+
+        for field_name, field in self.fields.items():
+            copy_data.pop(field_name, None)
+            self.restore_initialize_field(field_name, field, data, files, reverted_data)
+
+        # what's left of the data
+        cls = self.opts.model
+        assert cls is not None, \
+            "Serializer class '%s' is missing 'model' Meta option" % self.__class__.__name__
+        opts = get_concrete_model(cls)._meta
+        nested = bool(self.opts.depth)
+        for field_name in data.keys():
+            try:
+                model_field_tuple = opts.get_field_by_name(field_name)
+                model_field = model_field_tuple[0]
+            except models.FieldDoesNotExist:
+                continue
+            if model_field.rel:
+                related_model = _resolve_model(model_field.rel.to)
+                to_many = isinstance(model_field,
+                                     models.fields.related.ManyToManyField)
+                if nested:
+                    field = self.get_nested_field(model_field, related_model, to_many)
+                else:
+                    field = self.get_related_field(model_field, related_model, to_many)
+                self.restore_initialize_field(field_name, field, data, files, reverted_data)
+
+        return reverted_data
 

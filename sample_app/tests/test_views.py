@@ -98,10 +98,31 @@ class TestPollChoiceView(TestCase):
         self.assertEqual(doc.links['poll'].url(), 'http://testserver/poll/%s' % self.poll.id)
         self.assertEqual(doc.properties['choice_text'], self.choice.choice_text)
         self.assertEqual(doc.properties['votes'], 0)
+        self.assertNotIn('poll', doc.properties)
 
     def test_get_poll_choice_view_returns_404_if_all_the_lookup_fields_do_not_match(self):
         poll = Poll.objects.create(question='What is your favorite color?', pub_date=date(2014, 1, 3))
         response = self.client.get('/poll/%s/choice/%s' % (poll.id, self.choice.id))
         self.assertEqual(response.status_code, 404)
+
+
+class TestCreatePollChoiceView(TestCase):
+    def setUp(self):
+        self.poll = Poll.objects.create(question='What is your favorite food?', pub_date=date(2014, 1, 3))
+
+    def test_create_poll_choice_successfully(self):
+        data = {
+            'choice_text': 'Oishi'
+        }
+        response = self.client.post('/poll/%s/choice' % self.poll.id, data=simplejson.dumps(data), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        choice = Choice.objects.get(poll=self.poll, choice_text=data['choice_text'])
+        content = simplejson.loads(response.content)
+        doc = Document.from_object(content)
+        self.assertEqual(doc.links['self'].url(), 'http://testserver/poll/%s/choice/%s' % (self.poll.id, choice.id))
+        self.assertEqual(doc.links['poll'].url(), 'http://testserver/poll/%s' % self.poll.id)
+        self.assertEqual(doc.properties['choice_text'], choice.choice_text)
+        self.assertEqual(doc.properties['votes'], 0)
+        self.assertNotIn('poll', doc.properties)
 
 
