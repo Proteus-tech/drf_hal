@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from drf_hal.mixins import MultipleLookupFieldsMixin
 from sample_app.models import Choice, Poll
 from sample_app.serializers import ChoiceSerializer, ChoiceExcludePollSerializer, ChoiceExcludeVotesSerializer, \
     ChoiceEmbedPollSerializer, PollSerializer, ChoiceFieldsPollSerializer, ChoiceLookupFieldPollSerializer, \
@@ -32,7 +33,8 @@ class PollRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
         return PollSerializer
 
 
-class PollChoiceRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+class PollChoiceRetrieveUpdateDestroyAPIView(MultipleLookupFieldsMixin, RetrieveUpdateDestroyAPIView):
     model = Choice
+    lookup_field = ('poll__pk', 'pk')
     serializer_class = PollChoiceSerializer
 

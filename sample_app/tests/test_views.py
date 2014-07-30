@@ -99,3 +99,9 @@ class TestPollChoiceView(TestCase):
         self.assertEqual(doc.properties['choice_text'], self.choice.choice_text)
         self.assertEqual(doc.properties['votes'], 0)
 
+    def test_get_poll_choice_view_returns_404_if_all_the_lookup_fields_do_not_match(self):
+        poll = Poll.objects.create(question='What is your favorite color?', pub_date=date(2014, 1, 3))
+        response = self.client.get('/poll/%s/choice/%s' % (poll.id, self.choice.id))
+        self.assertEqual(response.status_code, 404)
+
+
