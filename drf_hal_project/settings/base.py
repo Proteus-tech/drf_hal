@@ -100,6 +100,9 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'drf_hal.renderers.HALRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
-    )
+    ),
+    #Pagination
+    'PAGINATE_BY': 10,
+    'PAGINATE_BY_PARAM': 'page_size',
 }
 
