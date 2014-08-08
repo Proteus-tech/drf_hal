@@ -130,7 +130,7 @@ class TestCreatePollChoiceView(TestCase):
 
 class TestPollListView(TestCase):
     def setUp(self):
-        for index in xrange(0, 10):
+        for index in xrange(0, 30):
             Poll.objects.create(question='Poll%s' % index, pub_date=date(2014, 8, 8))
 
     def test_get_poll_list(self):
