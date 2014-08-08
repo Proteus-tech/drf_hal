@@ -136,5 +136,7 @@ class TestPollListView(TestCase):
     def test_get_poll_list(self):
         response = self.client.get('/polls')
         self.assertEqual(response.status_code, 200)
+        print response.content
+        assert False
 
 

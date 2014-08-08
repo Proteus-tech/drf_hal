@@ -42,16 +42,7 @@ INSTALLED_APPS = (
     'rest_framework',
 
     'sample_app',
-
-    # testing
-    'django_nose',
 )
-
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_ARGS = [
-    '--with-coverage',
-    '--cover-package=.',
-]
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -100,6 +91,8 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'drf_hal.renderers.HALRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
-    )
+    ),
+    'DEFAULT_PAGINATION_SERIALIZER_CLASS':
+        'drf_hal.pagination.HALPaginationSerializer',
 }
 
