@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from datetime import date
+
 from django.test import TestCase
 import simplejson
 from dougrain import Document
+
 from sample_app.models import Poll, Choice
 
 
@@ -124,5 +126,15 @@ class TestCreatePollChoiceView(TestCase):
         self.assertEqual(doc.properties['choice_text'], choice.choice_text)
         self.assertEqual(doc.properties['votes'], 0)
         self.assertNotIn('poll', doc.properties)
+
+
+class TestPollListView(TestCase):
+    def setUp(self):
+        for index in xrange(0, 10):
+            Poll.objects.create(question='Poll%s' % index, pub_date=date(2014, 8, 8))
+
+    def test_get_poll_list(self):
+        response = self.client.get('/polls')
+        self.assertEqual(response.status_code, 200)
 
 
