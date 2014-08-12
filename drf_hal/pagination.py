@@ -88,11 +88,7 @@ class HALPaginationSerializer(pagination.BasePaginationSerializer):
         self.results_field = unicode(view.model._meta.verbose_name_plural)
         object_serializer = self.opts.object_serializer_class
 
-        if 'context' in kwargs:
-            context_kwarg = {'context': kwargs['context']}
-        else:
-            context_kwarg = {}
-
+        context_kwarg = {'context': self.context}
         self.fields[self.results_field] = object_serializer(source='object_list', **context_kwarg)
 
     def to_native(self, obj):
