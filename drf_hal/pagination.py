@@ -17,7 +17,7 @@ class PageLinkMixin(object):
         }
 
     def _get_page_link(self, value, page):
-        if not value.paginator.num_pages:
+        if not value.paginator.count:
             return None
         uri = self._get_current_uri()
         return self._get_link_object(replace_query_param(uri, self.page_field, page))
@@ -43,16 +43,34 @@ class LastPageField(PageLinkMixin, serializers.Field):
     """
     Field that returns a link to the last page in paginated results.
     """
-    page_field = 'page'
-
     def to_native(self, value):
         return self._get_page_link(value, value.paginator.num_pages)
 
 
+class NextPageField(PageLinkMixin, serializers.Field):
+    """
+    Field that returns a link to the next page in paginated results.
+    """
+    def to_native(self, value):
+        if not value.has_next():
+            return None
+        return self._get_page_link(value, value.next_page_number())
+
+
+class PreviousPageField(PageLinkMixin, serializers.Field):
+    """
+    Field that returns a link to the next page in paginated results.
+    """
+    def to_native(self, value):
+        if not value.has_previous():
+            return None
+        return self._get_page_link(value, value.previous_page_number())
+
+
 class HALPaginationLinksSerializer(serializers.Serializer):
     self = SelfPageField(source='*')
-    next = pagination.NextPageField(source='*')
-    prev = pagination.PreviousPageField(source='*')
+    next = NextPageField(source='*')
+    prev = PreviousPageField(source='*')
     first = FirstPageField(source='*')
     last = LastPageField(source='*')
 

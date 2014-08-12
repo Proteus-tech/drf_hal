@@ -140,6 +140,10 @@ class TestPollListView(TestCase):
         _links = content['_links']
         _embedded = content['_embedded']
         self.assertEqual(_links['self']['href'], 'http://testserver/polls')
+        self.assertEqual(_links['first']['href'], 'http://testserver/polls?page=1')
+        self.assertEqual(_links['last']['href'], 'http://testserver/polls?page=3')
+        self.assertEqual(_links['next']['href'], 'http://testserver/polls?page=2')
+        self.assertIsNone(_links['prev'])
 
     def test_get_poll_list_no_page(self):
         Poll.objects.all().delete()
@@ -151,6 +155,10 @@ class TestPollListView(TestCase):
         _embedded = content['_embedded']
         self.assertEqual(content['total'], 0)
         self.assertEqual(_links['self']['href'], 'http://testserver/polls')
+        self.assertIsNone(_links['first'])
+        self.assertIsNone(_links['last'])
+        self.assertIsNone(_links['next'])
+        self.assertIsNone(_links['prev'])
 
 
 
