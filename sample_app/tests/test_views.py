@@ -129,16 +129,19 @@ class TestCreatePollChoiceView(TestCase):
 
 
 class TestPollListView(TestCase):
-    def setUp(self):
-        for index in xrange(0, 30):
+    def __create_polls(self, count):
+        for index in xrange(0, count):
             Poll.objects.create(question='Poll%s' % index, pub_date=date(2014, 8, 8))
 
     def test_get_poll_list(self):
+        self.__create_polls(30)
+
         response = self.client.get('/polls')
         self.assertEqual(response.status_code, 200)
         content = simplejson.loads(response.content)
         _links = content['_links']
         _embedded = content['_embedded']
+        self.assertEqual(content['total'], 30)
         self.assertEqual(_links['self']['href'], 'http://testserver/polls')
         self.assertEqual(_links['first']['href'], 'http://testserver/polls?page=1')
         self.assertEqual(_links['last']['href'], 'http://testserver/polls?page=3')
@@ -146,8 +149,6 @@ class TestPollListView(TestCase):
         self.assertIsNone(_links['prev'])
 
     def test_get_poll_list_no_page(self):
-        Poll.objects.all().delete()
-
         response = self.client.get('/polls')
         self.assertEqual(response.status_code, 200)
         content = simplejson.loads(response.content)
@@ -160,5 +161,19 @@ class TestPollListView(TestCase):
         self.assertIsNone(_links['next'])
         self.assertIsNone(_links['prev'])
 
+    def test_get_poll_list_only_one_page(self):
+        self.__create_polls(10)
+
+        response = self.client.get('/polls')
+        self.assertEqual(response.status_code, 200)
+        content = simplejson.loads(response.content)
+        _links = content['_links']
+        _embedded = content['_embedded']
+        self.assertEqual(content['total'], 10)
+        self.assertEqual(_links['self']['href'], 'http://testserver/polls')
+        self.assertEqual(_links['first']['href'], 'http://testserver/polls?page=1')
+        self.assertEqual(_links['last']['href'], 'http://testserver/polls?page=1')
+        self.assertIsNone(_links['next'])
+        self.assertIsNone(_links['prev'])
 
 
