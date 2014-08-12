@@ -137,8 +137,20 @@ class TestPollListView(TestCase):
         response = self.client.get('/polls')
         self.assertEqual(response.status_code, 200)
         content = simplejson.loads(response.content)
-        doc = Document.from_object(content)
-        self.assertEqual(doc.links['self'].url(), 'http://testserver/polls')
+        _links = content['_links']
+        _embedded = content['_embedded']
+        self.assertEqual(_links['self']['href'], 'http://testserver/polls')
+
+    def test_get_poll_list_no_page(self):
+        Poll.objects.all().delete()
+
+        response = self.client.get('/polls')
+        self.assertEqual(response.status_code, 200)
+        content = simplejson.loads(response.content)
+        _links = content['_links']
+        _embedded = content['_embedded']
+        self.assertEqual(content['total'], 0)
+        self.assertEqual(_links['self']['href'], 'http://testserver/polls')
 
 
 

@@ -7,14 +7,20 @@ from rest_framework.templatetags.rest_framework import replace_query_param
 class PageLinkMixin(object):
     page_field = 'page'
 
+    def _get_current_uri(self):
+        request = self.context.get('request')
+        return request and request.build_absolute_uri() or ''
+
+    def _get_link_object(self, link):
+        return {
+            'href': link
+        }
+
     def _get_page_link(self, value, page):
         if not value.paginator.num_pages:
             return None
-        request = self.context.get('request')
-        url = request and request.build_absolute_uri() or ''
-        return {
-            'href': replace_query_param(url, self.page_field, page)
-        }
+        uri = self._get_current_uri()
+        return self._get_link_object(replace_query_param(uri, self.page_field, page))
 
 
 class SelfPageField(PageLinkMixin, serializers.Field):
@@ -22,7 +28,7 @@ class SelfPageField(PageLinkMixin, serializers.Field):
     Field that returns a link to the current page.
     """
     def to_native(self, value):
-        return self._get_page_link(value, value.number)
+        return self._get_link_object(self._get_current_uri())
 
 
 class FirstPageField(PageLinkMixin, serializers.Field):
@@ -30,7 +36,7 @@ class FirstPageField(PageLinkMixin, serializers.Field):
     Field that returns a link to the first page in paginated results.
     """
     def to_native(self, value):
-        return self._get_page_link(value, None)
+        return self._get_page_link(value, 1)
 
 
 class LastPageField(PageLinkMixin, serializers.Field):
