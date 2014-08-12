@@ -176,4 +176,19 @@ class TestPollListView(TestCase):
         self.assertIsNone(_links['next'])
         self.assertIsNone(_links['prev'])
 
+    def test_get_poll_list_at_last_page_no_next_page(self):
+        self.__create_polls(20)
+
+        response = self.client.get('/polls?page=2')
+        self.assertEqual(response.status_code, 200)
+        content = simplejson.loads(response.content)
+        _links = content['_links']
+        _embedded = content['_embedded']
+        self.assertEqual(content['total'], 20)
+        self.assertEqual(_links['self']['href'], 'http://testserver/polls?page=2')
+        self.assertEqual(_links['first']['href'], 'http://testserver/polls?page=1')
+        self.assertEqual(_links['last']['href'], 'http://testserver/polls?page=2')
+        self.assertIsNone(_links['next'])
+        self.assertEqual(_links['prev']['href'], 'http://testserver/polls?page=1')
+
 
