@@ -5,6 +5,11 @@ from rest_framework.fields import Field
 from rest_framework import reverse
 
 
+class HALPaginationLinksField(Field):
+    def field_to_native(self, obj, field_name):
+        return {}
+
+
 class HALLinksField(Field):
     """
     Represents the instance, or a property on the instance, using hyperlinking.
