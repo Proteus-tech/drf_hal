@@ -211,3 +211,14 @@ class TestPollListView(TestCase):
         self.assertEqual(_links['next']['href'], 'http://testserver/polls?page=4')
         self.assertEqual(_links['prev']['href'], 'http://testserver/polls?page=2')
 
+    def test_get_poll_list_return_count_for_the_page(self):
+        self.__create_polls(10)
+
+        response = self.client.get('/polls?page_size=3')
+        self.assertEqual(response.status_code, 200)
+        content = simplejson.loads(response.content)
+        _links = content['_links']
+        _embedded = content['_embedded']
+        self.assertEqual(content['total'], 10)
+        self.assertEqual(content['num_pages'], 4)
+        self.assertEqual(content['count'], 3)

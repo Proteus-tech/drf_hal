@@ -67,6 +67,16 @@ class PreviousPageField(PageLinkMixin, serializers.Field):
         return self._get_page_link(value, value.previous_page_number())
 
 
+class CountField(serializers.Field):
+    """
+    Field that returns count for the page
+    """
+    def to_native(self, value):
+        start_index = value.start_index()
+        end_index = value.end_index()
+        return (end_index - start_index) + 1
+
+
 class HALPaginationLinksSerializer(serializers.Serializer):
     self = SelfPageField(source='*')
     next = NextPageField(source='*')
@@ -79,6 +89,7 @@ class HALPaginationSerializer(pagination.BasePaginationSerializer):
     _links = HALPaginationLinksSerializer(source='*')  # Takes the page object as the source
     total = serializers.Field(source='paginator.count')
     num_pages = serializers.Field(source='paginator.num_pages')
+    count = CountField(source='*')
 
     def __init__(self, *args, **kwargs):
         """
