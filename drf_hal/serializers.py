@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import copy
+
 from django.core.exceptions import ValidationError
 from django.utils.datastructures import SortedDict
 from django.db import models
@@ -8,6 +9,7 @@ from rest_framework.fields import Field
 from rest_framework.pagination import BasePaginationSerializer
 from rest_framework.relations import HyperlinkedRelatedField
 from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializerOptions, _resolve_model
+
 from drf_hal.fields import HALLinksField, HALEmbeddedField, HALPaginationLinksField
 
 
@@ -47,14 +49,14 @@ class HALModelSerializer(ModelSerializer):
             view_name=self.opts.view_name,
             lookup_field=self.opts.lookup_field,
             additional_links=self.additional_links,
-        )
+            )
         _links.initialize(self, '_links')
         self.fields['_links'] = _links
 
         if self.embedded_fields:
             _embedded = HALEmbeddedField(
                 embedded_fields=self.embedded_fields,
-            )
+                )
             _embedded.initialize(self, '_embedded')
             self.fields['_embedded'] = _embedded
 
@@ -136,8 +138,8 @@ class HALModelSerializer(ModelSerializer):
         forward_rels = [field for field in opts.fields if field.serialize]
         forward_rels += [field for field in opts.many_to_many if field.serialize]
 
-        field = None
         for model_field in forward_rels:
+            field = None
             has_through_model = False
 
             if model_field.rel:
