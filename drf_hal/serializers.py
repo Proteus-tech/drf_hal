@@ -168,17 +168,13 @@ class HALModelSerializer(ModelSerializer):
                 ret[model_field.name] = field
 
         # Deal with reverse relationships
-        if not self.opts.fields:
-            reverse_rels = []
-        else:
-            # Reverse relationships are only included if they are explicitly
-            # present in the `fields` option on the serializer
-            reverse_rels = opts.get_all_related_objects()
-            reverse_rels += opts.get_all_related_many_to_many_objects()
+        reverse_rels = opts.get_all_related_objects()
+        reverse_rels += opts.get_all_related_many_to_many_objects()
 
         for relation in reverse_rels:
             accessor_name = relation.get_accessor_name()
-            if not self.opts.fields or accessor_name not in self.opts.fields:
+            if accessor_name not in self.opts.fields and accessor_name not in base_fields:
+                # we will only care for reverse relationships if they're in "fields" option or have been defined in the class (base_fields)
                 continue
             related_model = relation.model
             to_many = relation.field.rel.multiple
@@ -195,6 +191,9 @@ class HALModelSerializer(ModelSerializer):
                 self.add_field_to_embedded(accessor_name, self.get_nested_field(None, related_model, to_many), has_through_model)
             else:
                 self.add_field_to_embedded(accessor_name, self.get_related_field(None, related_model, to_many), has_through_model)
+            # remove from base_fields so it doesn't get serialized there as well
+            if accessor_name in base_fields:
+                base_fields.pop(accessor_name)
 
         # Add the `read_only` flag to any fields that have bee specified
         # in the `read_only_fields` option
