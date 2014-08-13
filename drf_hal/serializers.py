@@ -6,21 +6,10 @@ from django.utils.datastructures import SortedDict
 from django.db import models
 from rest_framework.compat import get_concrete_model
 from rest_framework.fields import Field
-from rest_framework.pagination import BasePaginationSerializer
 from rest_framework.relations import HyperlinkedRelatedField
 from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializerOptions, _resolve_model
 
-from drf_hal.fields import HALLinksField, HALEmbeddedField, HALPaginationLinksField
-
-
-class HALPaginationSerializer(BasePaginationSerializer):
-
-    def __init__(self, *args, **kwargs):
-        super(HALPaginationSerializer, self).__init__(*args, **kwargs)
-        _links = HALPaginationLinksField()
-        _links.initialize(self, '_links')
-        self.fields['_links'] = _links
-        self.fields['_embedded'] = self.fields.pop('results')
+from drf_hal.fields import HALLinksField, HALEmbeddedField
 
 
 class HALModelSerializer(ModelSerializer):

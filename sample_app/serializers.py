@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from rest_framework.pagination import PaginationSerializer
-from drf_hal.serializers import HALModelSerializer, HALPaginationSerializer
+from drf_hal.pagination import HALPaginationSerializer
+from drf_hal.serializers import HALModelSerializer
 from sample_app.models import Choice, Poll
 
 
