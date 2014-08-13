@@ -142,6 +142,7 @@ class TestPollListView(TestCase):
         _links = content['_links']
         _embedded = content['_embedded']
         self.assertEqual(content['total'], 30)
+        self.assertEqual(content['num_pages'], 3)
         self.assertEqual(_links['self']['href'], 'http://testserver/polls')
         self.assertEqual(_links['first']['href'], 'http://testserver/polls?page=1')
         self.assertEqual(_links['last']['href'], 'http://testserver/polls?page=3')
@@ -155,6 +156,7 @@ class TestPollListView(TestCase):
         _links = content['_links']
         _embedded = content['_embedded']
         self.assertEqual(content['total'], 0)
+        self.assertEqual(content['num_pages'], 1)
         self.assertEqual(_links['self']['href'], 'http://testserver/polls')
         self.assertIsNone(_links['first'])
         self.assertIsNone(_links['last'])
@@ -170,6 +172,7 @@ class TestPollListView(TestCase):
         _links = content['_links']
         _embedded = content['_embedded']
         self.assertEqual(content['total'], 10)
+        self.assertEqual(content['num_pages'], 1)
         self.assertEqual(_links['self']['href'], 'http://testserver/polls')
         self.assertEqual(_links['first']['href'], 'http://testserver/polls?page=1')
         self.assertEqual(_links['last']['href'], 'http://testserver/polls?page=1')
@@ -185,6 +188,7 @@ class TestPollListView(TestCase):
         _links = content['_links']
         _embedded = content['_embedded']
         self.assertEqual(content['total'], 20)
+        self.assertEqual(content['num_pages'], 2)
         self.assertEqual(_links['self']['href'], 'http://testserver/polls?page=2')
         self.assertEqual(_links['first']['href'], 'http://testserver/polls?page=1')
         self.assertEqual(_links['last']['href'], 'http://testserver/polls?page=2')
@@ -200,6 +204,7 @@ class TestPollListView(TestCase):
         _links = content['_links']
         _embedded = content['_embedded']
         self.assertEqual(content['total'], 40)
+        self.assertEqual(content['num_pages'], 4)
         self.assertEqual(_links['self']['href'], 'http://testserver/polls?page=3')
         self.assertEqual(_links['first']['href'], 'http://testserver/polls?page=1')
         self.assertEqual(_links['last']['href'], 'http://testserver/polls?page=4')

@@ -78,6 +78,7 @@ class HALPaginationLinksSerializer(serializers.Serializer):
 class HALPaginationSerializer(pagination.BasePaginationSerializer):
     _links = HALPaginationLinksSerializer(source='*')  # Takes the page object as the source
     total = serializers.Field(source='paginator.count')
+    num_pages = serializers.Field(source='paginator.num_pages')
 
     def __init__(self, *args, **kwargs):
         """
