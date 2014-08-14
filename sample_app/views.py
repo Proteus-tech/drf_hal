@@ -3,10 +3,10 @@ from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView,
 from rest_framework.reverse import reverse
 
 from drf_hal.mixins import MultipleLookupFieldsMixin
-from sample_app.models import Choice, Poll
+from sample_app.models import Choice, Poll, Channel, Partner
 from sample_app.serializers import ChoiceSerializer, ChoiceExcludePollSerializer, ChoiceExcludeVotesSerializer, \
     ChoiceEmbedPollSerializer, PollSerializer, ChoiceFieldsPollSerializer, ChoiceLookupFieldPollSerializer, \
-    PollChoiceSerializer, PollListSerializer
+    PollChoiceSerializer, PollListSerializer, ChannelSerializer, PartnerSerializer
 
 
 class ChoiceRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -62,3 +62,19 @@ class PollListAPIView(ListAPIView):
     paginate_by = 10
     paginate_by_param = 'page_size'
     max_paginate_by = 100
+
+
+class CreateChannelAPIView(CreateAPIView):
+    model = Channel
+    serializer_class = ChannelSerializer
+
+
+class ChannelRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    model = Channel
+    serializer_class = ChannelSerializer
+
+
+class PartnerRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    model = Partner
+    serializer_class = PartnerSerializer
+

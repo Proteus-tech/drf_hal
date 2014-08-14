@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-from rest_framework.pagination import PaginationSerializer
 from drf_hal.pagination import HALPaginationSerializer
 from drf_hal.serializers import HALModelSerializer
-from sample_app.models import Choice, Poll
+from sample_app.models import Choice, Poll, Channel, Partner
 
 
 class PollSerializer(HALModelSerializer):
@@ -58,4 +57,18 @@ class ChoiceLookupFieldPollSerializer(HALModelSerializer):
 
     class Meta:
         model = Choice
+        lookup_field = 'pk'
+
+
+class ChannelSerializer(HALModelSerializer):
+
+    class Meta:
+        model = Channel
+        lookup_field = 'pk'
+
+
+class PartnerSerializer(HALModelSerializer):
+
+    class Meta:
+        model = Partner
         lookup_field = 'pk'

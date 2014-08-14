@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from datetime import date
 
+from django.core.urlresolvers import reverse
 from django.test import TestCase
 import simplejson
 from dougrain import Document
 
-from sample_app.models import Poll, Choice
+from sample_app.models import Poll, Choice, Partner
 
 
 class TestChoiceView(TestCase):
@@ -222,3 +223,19 @@ class TestPollListView(TestCase):
         self.assertEqual(content['total'], 10)
         self.assertEqual(content['num_pages'], 4)
         self.assertEqual(content['count'], 3)
+
+
+class TestCreateChannelAPIView(TestCase):
+    def setUp(self):
+        self.partner = Partner.objects.create(name='abc')
+        self.partner_uri = 'http://testserver%s' % reverse('partner-detail', kwargs={'pk': self.partner.pk})
+
+        self.data = {
+            'partner': [self.partner_uri],
+            'name': 'ABC'
+        }
+        self.test_uri = reverse('create-channel')
+
+    def test_create_channel(self):
+        response = self.client.post(self.test_uri, simplejson.dumps(self.data), content_type='application/json')
+        self.assertEqual(response.status_code, 201)

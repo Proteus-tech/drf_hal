@@ -8,4 +8,6 @@ urlpatterns = patterns('',
 
     url(r'^choice', include('sample_app.choice_urls')),
     url(r'^poll', include('sample_app.poll_urls')),
+    url(r'^channel', include('sample_app.channel_urls')),
+    url(r'^partner', include('sample_app.partner_urls')),
 )
