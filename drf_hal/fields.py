@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import warnings
+
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework.fields import Field
 from rest_framework import reverse
@@ -68,7 +69,14 @@ class HALLinksField(Field):
                 'href': self_link
             }
         }
-        [ret.update({key: {'href': field.field_to_native(obj, key)}}) for key, field in self.additional_links.items()]
+        for key, field in self.additional_links.items():
+            if field.many:
+                links = field.field_to_native(obj, key)
+                ret[key] = [{'href': link} for link in links]
+            else:
+                ret[key] = {
+                    'href': field.field_to_native(obj, key)
+                }
         return ret
 
     def get_url(self, obj, view_name, request, format):
