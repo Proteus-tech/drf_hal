@@ -6,7 +6,7 @@ from django.test import TestCase
 import simplejson
 from dougrain import Document
 
-from sample_app.models import Poll, Choice, Partner
+from sample_app.models import Poll, Choice, Partner, Channel
 
 
 class TestChoiceView(TestCase):
@@ -239,3 +239,12 @@ class TestCreateChannelAPIView(TestCase):
     def test_create_channel(self):
         response = self.client.post(self.test_uri, simplejson.dumps(self.data), content_type='application/json')
         self.assertEqual(response.status_code, 201)
+
+        saved_channel = Channel.objects.get(name=self.data['name'])
+
+        content = simplejson.loads(response.content)
+        _links = content['_links']
+        self.assertDictEqual(_links['self'], {'href': 'http://testserver%s' % reverse('channel-detail',
+                                                                                     kwargs={'pk': saved_channel.pk})})
+        self.assertEqual(_links['partner'], [{'href': self.partner_uri}])
+        self.assertEqual(content['name'], saved_channel.name)
