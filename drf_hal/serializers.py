@@ -60,10 +60,6 @@ class HALModelSerializer(ModelSerializer):
         }
         return self._default_view_name % format_kwargs
 
-    def get_pk_field(self, model_field):
-        if self.opts.fields and model_field.name in self.opts.fields:
-            return self.get_field(model_field)
-
     def get_related_field(self, model_field, related_model, to_many):
         """
         Creates a default instance of a flat relational field.
