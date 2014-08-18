@@ -72,6 +72,8 @@ class CountField(serializers.Field):
     Field that returns count for the page
     """
     def to_native(self, value):
+        if value.paginator.count == 0:
+            return 0
         start_index = value.start_index()
         end_index = value.end_index()
         return (end_index - start_index) + 1
