@@ -4,6 +4,49 @@ import warnings
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework.fields import Field
 from rest_framework import reverse
+from rest_framework.relations import HyperlinkedRelatedField
+
+
+class HALLinkField(HyperlinkedRelatedField):
+    many = False
+
+    def __init__(self, *args, **kwargs):
+        try:
+            self.view_name = kwargs.pop('view_name')
+        except KeyError:
+            msg = "HALLinkField requires 'view_name' argument"
+            raise ValueError(msg)
+
+        self.lookup_field = kwargs.pop('lookup_field')
+        self.many = kwargs.pop('many', self.many)
+        self.format = kwargs.pop('format', None)
+        super(HyperlinkedRelatedField, self).__init__(*args, **kwargs)
+
+    def get_url(self, obj, view_name, request, format):
+        """
+        Given an object, return the URL that hyperlinks to the object.
+
+        May raise a `NoReverseMatch` if the `view_name` and `lookup_field`
+        attributes are not configured to correctly match the URL conf.
+        """
+        kwargs = {}
+        if self.lookup_field:
+            for lookup_field in self.lookup_field:
+                split_lookup_field = lookup_field.split('__')
+                if len(split_lookup_field) > 1:
+                    value = obj
+                    for field in split_lookup_field:
+                        value = getattr(value, field, None)
+                    kwargs[lookup_field] = value
+                else:
+                    kwargs[lookup_field] = getattr(obj, lookup_field, None)
+
+        try:
+            return reverse.reverse(view_name, kwargs=kwargs, request=request, format=format)
+        except NoReverseMatch:
+            pass
+
+        raise NoReverseMatch()
 
 
 class HALLinksField(Field):
