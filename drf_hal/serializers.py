@@ -9,7 +9,7 @@ from rest_framework.fields import Field
 from rest_framework.relations import HyperlinkedRelatedField
 from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializerOptions, _resolve_model
 
-from drf_hal.fields import HALLinksField, HALEmbeddedField
+from drf_hal.fields import HALLinksField, HALEmbeddedField, HALLinkField
 
 
 class HALModelSerializer(ModelSerializer):
@@ -222,7 +222,10 @@ class HALModelSerializer(ModelSerializer):
         # Get the explicitly declared fields
         base_fields = copy.deepcopy(self.base_fields)
         for key, field in base_fields.items():
-            ret[key] = field
+            if isinstance(field, HALLinkField):
+                self.add_field_to_links(key, field)
+            else:
+                ret[key] = field
 
         # Add in the default fields
         default_fields = self.get_default_fields(ret)
