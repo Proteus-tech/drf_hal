@@ -7,7 +7,29 @@ from rest_framework import reverse
 from rest_framework.relations import HyperlinkedRelatedField
 
 
-class HALLinkField(HyperlinkedRelatedField):
+class HALLinkField(Field):
+    many = False
+
+    def __init__(self, *args, **kwargs):
+        try:
+            self.view_name = kwargs.pop('view_name')
+        except KeyError:
+            msg = "HALLinkField requires 'view_name' argument"
+            raise ValueError(msg)
+
+        self.lookup_mapping = kwargs.pop('lookup_mapping')
+        self.many = kwargs.pop('many', self.many)
+        super(HALLinkField, self).__init__(*args, **kwargs)
+
+    def field_to_native(self, obj, field_name):
+        request = self.context.get('request')
+        kwargs = {}
+        for key, value in self.lookup_mapping.items():
+            kwargs[key] = getattr(obj, value, None)
+        return reverse.reverse(self.view_name, kwargs=kwargs, request=request)
+
+
+class HALRelatedLinkField(HyperlinkedRelatedField):
     many = False
 
     def __init__(self, *args, **kwargs):
