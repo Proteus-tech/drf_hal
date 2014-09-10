@@ -8,7 +8,7 @@ from distutils.core import setup
 
 setup(
     name='drf-hal',
-    version='0.1.17',
+    version='0.1.18',
     description='Library that provides Hal specification capability on top of django-rest-framework',
     author='Proteus Technologies',
     author_email='team@proteus-tech.com',

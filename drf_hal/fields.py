@@ -135,6 +135,7 @@ class HALLinksField(Field):
             }
         }
         for key, field in self.additional_links.items():
+            field.initialize(parent=self, field_name=key)
             if field.many:
                 links = field.field_to_native(obj, key)
                 ret[key] = [{'href': link} for link in links]
@@ -185,6 +186,10 @@ class HALEmbeddedField(Field):
         self.embedded_fields = kwargs.pop('embedded_fields', {})
 
         super(HALEmbeddedField, self).__init__(*args, **kwargs)
+
+    def initialize(self, parent, field_name):
+        [field.initialize(parent, name) for name, field in self.embedded_fields.items()]
+        return super(HALEmbeddedField, self).initialize(parent, field_name)
 
     def field_to_native(self, obj, field_name):
         ret = {}
