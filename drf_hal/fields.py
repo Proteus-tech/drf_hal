@@ -196,3 +196,6 @@ class HALEmbeddedField(Field):
         [ret.update({key: field.field_to_native(obj, key)}) for key, field in self.embedded_fields.items()]
         return ret
 
+    def field_from_native(self, data, files, field_name, into):
+        embedded_data = data[field_name]
+        [field.field_from_native(embedded_data, files, key, into) for key, field in self.embedded_fields.items()]

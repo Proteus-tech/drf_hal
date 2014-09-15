@@ -6,7 +6,7 @@ from drf_hal.mixins import MultipleLookupFieldsMixin
 from sample_app.models import Choice, Poll, Channel, Partner
 from sample_app.serializers import ChoiceSerializer, ChoiceExcludePollSerializer, ChoiceExcludeVotesSerializer, \
     ChoiceEmbedPollSerializer, PollSerializer, ChoiceFieldsPollSerializer, ChoiceLookupFieldPollSerializer, \
-    PollChoiceSerializer, PollListSerializer, ChannelSerializer, PartnerSerializer
+    PollChoiceSerializer, PollListSerializer, ChannelSerializer, PartnerSerializer, CreatePollWithChoicesSerializer
 
 
 class ChoiceRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -26,6 +26,11 @@ class ChoiceRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
         if query_params.get('lookup_field'):
             return ChoiceLookupFieldPollSerializer
         return ChoiceSerializer
+
+
+class CreatePollWithChoicesAPIView(CreateAPIView):
+    model = Poll
+    serializer_class = CreatePollWithChoicesSerializer
 
 
 class PollRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):

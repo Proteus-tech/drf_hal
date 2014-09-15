@@ -225,6 +225,34 @@ class TestPollListView(TestCase):
         self.assertEqual(content['count'], 3)
 
 
+class TestCreatePollAPIView(TestCase):
+    def setUp(self):
+        self.data = dict(
+            question='What is your favorite animal?',
+            pub_date='2014-03-01T00:00:00Z',
+            _embedded=dict(
+                choices=[
+                    {
+                        'choice_text': 'cat',
+                    },
+                    {
+                        'choice_text': 'dog'
+                    }
+                ]
+            )
+        )
+        self.test_uri = '/poll_with_choices'
+
+    def test_create_poll_with_choices_successful(self):
+        response = self.client.post(self.test_uri, simplejson.dumps(self.data), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        poll = Poll.objects.get(question=self.data['question'])
+        choices = Choice.objects.filter(poll=poll)
+        self.assertEqual(choices.count(), 2)
+        self.assertEqual(choices[0].choice_text, self.data['_embedded']['choices'][0]['choice_text'])
+        self.assertEqual(choices[1].choice_text, self.data['_embedded']['choices'][1]['choice_text'])
+
+
 class TestCreateChannelAPIView(TestCase):
     def setUp(self):
         self.partner = Partner.objects.create(name='abc')

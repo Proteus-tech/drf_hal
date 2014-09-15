@@ -27,6 +27,19 @@ class ChoiceSerializer(HALModelSerializer):
         model = Choice
 
 
+class ChoiceRelatedSerializer(HALModelSerializer):
+    class Meta:
+        model = Choice
+        exclude = ('poll',)
+
+
+class CreatePollWithChoicesSerializer(HALModelSerializer):
+    choices = ChoiceRelatedSerializer(many=True, required=False)
+
+    class Meta:
+        model = Poll
+
+
 class ChoiceExcludePollSerializer(HALModelSerializer):
     class Meta:
         model = Choice
