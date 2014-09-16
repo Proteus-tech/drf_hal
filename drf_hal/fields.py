@@ -146,6 +146,17 @@ class HALLinksField(Field):
                 }
         return ret
 
+    def __get_lookup_value(self, obj, lookup_field):
+        split_lookup_field = lookup_field.split('__')
+        if len(split_lookup_field) > 1:
+            value = obj
+            for field in split_lookup_field:
+                value = getattr(value, field, None)
+            lookup = value
+        else:
+            lookup = getattr(obj, lookup_field, None)
+        return lookup
+
     def get_url(self, obj, view_name, request, format):
         """
         Given an object, return the URL that hyperlinks to the object.
@@ -158,15 +169,9 @@ class HALLinksField(Field):
             kwargs = {}
             for lookup_field in lookup_fields:
                 split_lookup_field = lookup_field.split('__')
-                if len(split_lookup_field) > 1:
-                    value = obj
-                    for field in split_lookup_field:
-                        value = getattr(value, field, None)
-                    kwargs[lookup_field] = value
-                else:
-                    kwargs[lookup_field] = getattr(obj, lookup_field, None)
+                kwargs[lookup_field] = self.__get_lookup_value(obj, lookup_field)
         else:
-            lookup_field = getattr(obj, self.lookup_field, None)
+            lookup_field = self.__get_lookup_value(obj, self.lookup_field)
             kwargs = {self.lookup_field: lookup_field}
 
         # Handle unsaved object case
