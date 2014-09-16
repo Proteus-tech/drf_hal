@@ -252,6 +252,13 @@ class TestCreatePollAPIView(TestCase):
         self.assertEqual(choices[0].choice_text, self.data['_embedded']['choices'][0]['choice_text'])
         self.assertEqual(choices[1].choice_text, self.data['_embedded']['choices'][1]['choice_text'])
 
+    def test_create_poll_with_choices_no_choice(self):
+        del self.data['_embedded']
+        response = self.client.post(self.test_uri, simplejson.dumps(self.data), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        poll = Poll.objects.get(question=self.data['question'])
+        choices = Choice.objects.filter(poll=poll)
+
 
 class TestCreateChannelAPIView(TestCase):
     def setUp(self):

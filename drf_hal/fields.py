@@ -197,5 +197,8 @@ class HALEmbeddedField(Field):
         return ret
 
     def field_from_native(self, data, files, field_name, into):
-        embedded_data = data[field_name]
+        embedded_data = data.get(field_name)
+        if not embedded_data:
+            return
         [field.field_from_native(embedded_data, files, key, into) for key, field in self.embedded_fields.items()]
+
