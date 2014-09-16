@@ -259,7 +259,14 @@ class HALModelSerializer(ModelSerializer):
         try:
             field.field_from_native(data, files, field_name, reverted_data)
         except ValidationError as err:
-            self._errors[field_name] = list(err.messages)
+            if getattr(err, 'error_dict', None):
+                for key, value in err.error_dict.items():
+                    if isinstance(value, list) and len(value) > 0:
+                        self._errors[key] = value[0].messages
+                    else:
+                        self._errors[key] = value
+            else:
+                self._errors[field_name] = list(err.messages)
 
     def restore_fields(self, data, files):
         """

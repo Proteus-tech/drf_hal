@@ -255,9 +255,9 @@ class TestCreatePollAPIView(TestCase):
     def test_create_poll_with_choices_no_choice(self):
         del self.data['_embedded']
         response = self.client.post(self.test_uri, simplejson.dumps(self.data), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
-        poll = Poll.objects.get(question=self.data['question'])
-        choices = Choice.objects.filter(poll=poll)
+        self.assertEqual(response.status_code, 400)
+        content = simplejson.loads(response.content)
+        self.assertEqual(content['choices'], ["This field is required."])
 
 
 class TestCreateChannelAPIView(TestCase):

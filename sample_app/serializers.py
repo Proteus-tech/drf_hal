@@ -34,7 +34,7 @@ class ChoiceRelatedSerializer(HALModelSerializer):
 
 
 class CreatePollWithChoicesSerializer(HALModelSerializer):
-    choices = ChoiceRelatedSerializer(many=True, required=False)
+    choices = ChoiceRelatedSerializer(many=True)
 
     class Meta:
         model = Poll

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import warnings
 
+from django.core.exceptions import ValidationError
+
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework.fields import Field
 from rest_framework import reverse
@@ -197,8 +199,15 @@ class HALEmbeddedField(Field):
         return ret
 
     def field_from_native(self, data, files, field_name, into):
-        embedded_data = data.get(field_name)
-        if not embedded_data:
-            return
-        [field.field_from_native(embedded_data, files, key, into) for key, field in self.embedded_fields.items()]
+        embedded_data = data.get(field_name, {})
+        error_dict = {}
+        for key, field in self.embedded_fields.items():
+            try:
+                field.field_from_native(embedded_data, files, key, into)
+            except ValidationError as err:
+                error_dict[key] = err
+        if error_dict:
+            raise ValidationError(error_dict)
+
+
 
