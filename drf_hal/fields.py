@@ -2,7 +2,6 @@
 import warnings
 
 from django.core.exceptions import ValidationError
-
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework.fields import Field
 from rest_framework import reverse
@@ -182,6 +181,11 @@ class HALLinksField(Field):
         raise NoReverseMatch()
 
 
+class HALEmbeddedFieldValidationError(ValidationError):
+    def __init__(self, error_dict):
+        self.error_dict = error_dict
+
+
 class HALEmbeddedField(Field):
 
     def __init__(self, *args, **kwargs):
@@ -207,7 +211,7 @@ class HALEmbeddedField(Field):
             except ValidationError as err:
                 error_dict[key] = err
         if error_dict:
-            raise ValidationError(error_dict)
+            raise HALEmbeddedFieldValidationError(error_dict)
 
 
 

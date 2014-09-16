@@ -261,10 +261,7 @@ class HALModelSerializer(ModelSerializer):
         except ValidationError as err:
             if getattr(err, 'error_dict', None):
                 for key, value in err.error_dict.items():
-                    if isinstance(value, list) and len(value) > 0:
-                        self._errors[key] = value[0].messages
-                    else:
-                        self._errors[key] = value
+                    self._errors[key] = value.messages
             else:
                 self._errors[field_name] = list(err.messages)
 
