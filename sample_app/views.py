@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView, ListAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.reverse import reverse
 
 from drf_hal.mixins import MultipleLookupFieldsMixin
 from sample_app.models import Choice, Poll, Channel, Partner
 from sample_app.serializers import ChoiceSerializer, ChoiceExcludePollSerializer, ChoiceExcludeVotesSerializer, \
     ChoiceEmbedPollSerializer, PollSerializer, ChoiceFieldsPollSerializer, ChoiceLookupFieldPollSerializer, \
-    PollChoiceSerializer, PollListSerializer, ChannelSerializer, PartnerSerializer, CreatePollWithChoicesSerializer
+    PollChoiceSerializer, PollListSerializer, ChannelSerializer, PartnerSerializer, CreatePollWithChoicesSerializer, \
+    PollWithAdditionalEmbeddedSerializer
 
 
 class ChoiceRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -38,6 +39,13 @@ class PollRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
     def get_serializer_class(self):
         return PollSerializer
+
+
+class PollWithAdditionalEmbeddedView(RetrieveAPIView):
+    model = Poll
+
+    def get_serializer_class(self):
+        return PollWithAdditionalEmbeddedSerializer
 
 
 class PollRetrieveListAPIView(ListAPIView):

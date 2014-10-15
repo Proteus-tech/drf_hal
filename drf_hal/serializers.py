@@ -12,11 +12,17 @@ from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializ
 from drf_hal.fields import HALLinksField, HALEmbeddedField, HALLinkField, HALRelatedLinkField
 
 
+class HALModelSerializerOptions(HyperlinkedModelSerializerOptions):
+    def __init__(self, meta):
+        super(HALModelSerializerOptions, self).__init__(meta)
+        self.additional_embedded = getattr(meta, 'additional_embedded', None)
+
+
 class HALModelSerializer(ModelSerializer):
     """
     A subclass of ModelSerializer that follows the HAL specs (http://stateless.co/hal_specification.html).
     """
-    _options_class = HyperlinkedModelSerializerOptions
+    _options_class = HALModelSerializerOptions
     _default_view_name = '%(model_name)s-detail'
     _hyperlink_field_class = HyperlinkedRelatedField
 
@@ -248,6 +254,14 @@ class HALModelSerializer(ModelSerializer):
                 ret.pop(key, None)
                 self.additional_links.pop(key, None)
                 self.embedded_fields.pop(key, None)
+
+        # additional embedded fields
+        if getattr(self.opts, 'additional_embedded', None):
+            assert isinstance(self.opts.additional_embedded, (list, tuple)), '`exclude` must be a list or tuple'
+            for key in self.opts.additional_embedded:
+                field = ret.pop(key, None)
+                if field:
+                    self.add_field_to_embedded(key, field)
 
         for key, field in ret.items():
             field.initialize(parent=self, field_name=key)

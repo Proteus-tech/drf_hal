@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from rest_framework import serializers
+
 from drf_hal.pagination import HALPaginationSerializer
 from drf_hal.serializers import HALModelSerializer
 from sample_app.models import Choice, Poll, Channel, Partner
@@ -7,6 +9,17 @@ from sample_app.models import Choice, Poll, Channel, Partner
 class PollSerializer(HALModelSerializer):
     class Meta:
         model = Poll
+
+
+class PollWithAdditionalEmbeddedSerializer(HALModelSerializer):
+    additional_field = serializers.SerializerMethodField('get_additional_field')
+
+    class Meta:
+        model = Poll
+        additional_embedded = ('additional_field',)
+
+    def get_additional_field(self, obj):
+        return {'value': 'added on %s' % obj.id}
 
 
 class PollListSerializer(HALPaginationSerializer):
