@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import warnings
+
 from django.core.urlresolvers import NoReverseMatch
 from django.http import HttpRequest
 from django.test import TestCase
 from mock import Mock, patch
 from rest_framework.request import Request
+
 from drf_hal.fields import HALLinksField
 
 
@@ -18,11 +20,9 @@ class TestHALLinksFieldInitialization(TestCase):
         links_field = HALLinksField(
             view_name='poll-detail',
             additional_links=self.additional_links,
-            exclude=self.exclude,
             format=self.links_format
         )
         self.assertEqual(links_field.additional_links, self.additional_links)
-        self.assertEqual(links_field.exclude, self.exclude)
         self.assertEqual(links_field.format, self.links_format)
         self.assertEqual(links_field.lookup_field, 'pk')
 
@@ -30,17 +30,15 @@ class TestHALLinksFieldInitialization(TestCase):
         links_field = HALLinksField(
             view_name='poll-detail',
             additional_links=self.additional_links,
-            exclude=self.exclude,
             format=self.links_format,
             lookup_field='slug'
         )
         self.assertEqual(links_field.additional_links, self.additional_links)
-        self.assertEqual(links_field.exclude, self.exclude)
         self.assertEqual(links_field.format, self.links_format)
         self.assertEqual(links_field.lookup_field, 'slug')
 
     def test_initialization_throw_error_if_there_is_no_view_name(self):
-        with self.assertRaisesRegexp(ValueError, "requires 'view_name'"):
+        with self.assertRaisesRegexp(AssertionError, r"view_name.+required"):
             HALLinksField(
                 additional_links=self.additional_links,
                 exclude=self.exclude,
@@ -61,15 +59,13 @@ class TestHALLinksFieldFieldToNative(TestCase):
         self.links_field.get_url = Mock()
         self.self_link = 'http://about/me'
         self.links_field.get_url.return_value = self.self_link
-        self.links_field.context = dict()
         self.request = Request(HttpRequest())
-        self.links_field.context['request'] = self.request
-        self.links_field.context['format'] = self.links_format
-
+        self.links_field._context = {}
+        self.links_field._context['request'] = self.request
         self.obj = Mock()
 
-    def test_field_to_native(self):
-        ret = self.links_field.field_to_native(self.obj, 'vote_number')
+    def test_to_representation(self):
+        ret = self.links_field.to_representation(self.obj)
 
         expected_ret = {
             'self': {
@@ -78,30 +74,30 @@ class TestHALLinksFieldFieldToNative(TestCase):
         }
         self.assertDictEqual(ret, expected_ret)
 
-    def test_field_to_native_no_request_has_warning(self):
-        del self.links_field.context['request']
+    def test_to_representation_no_request_has_warning(self):
+        del self.links_field._context['request']
         with warnings.catch_warnings(record=True) as w:
             # Cause all warnings to always be triggered.
             warnings.simplefilter("always")
 
-            self.links_field.field_to_native(self.obj, 'vote_number')
+            self.links_field.to_representation(self.obj)
 
             self.assertEqual(len(w), 1)
             self.assertTrue(issubclass(w[-1].category, RuntimeWarning))
             self.assertIn("not allowed", str(w[-1].message))
 
-    def test_field_to_native_different_format_in_context_and_when_initialized(self):
-        self.links_field.context['format'] = 'json'
+    def test_to_representation_different_format_in_context_and_when_initialized(self):
+        self.links_field._context['format'] = 'json'
 
-        self.links_field.field_to_native(self.obj, 'vote_number')
+        self.links_field.to_representation(self.obj)
 
         self.links_field.get_url.assert_called_once_with(self.obj, self.view_name, self.request, self.links_format)
 
-    def test_field_to_native_no_reverse_match(self):
+    def test_to_representation_no_reverse_match(self):
         self.links_field.get_url.side_effect = NoReverseMatch
 
         with self.assertRaisesRegexp(Exception, 'Could not resolve URL'):
-            self.links_field.field_to_native(self.obj, 'vote_number')
+            self.links_field.to_representation(self.obj)
 
 
 class TestHALLinksFieldGetUrl(TestCase):

@@ -2,7 +2,7 @@
 import warnings
 
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import NoReverseMatch
+from django.core.urlresolvers import NoReverseMatch, resolve
 from rest_framework.fields import Field
 from rest_framework import reverse
 from rest_framework.relations import HyperlinkedRelatedField
@@ -79,23 +79,24 @@ class HALLinksField(Field):
     lookup_field = 'pk'
     read_only = True
 
-    def __init__(self, *args, **kwargs):
-        try:
-            self.view_name = kwargs.pop('view_name')
-        except KeyError:
-            msg = "HALLinksField requires 'view_name' argument"
-            raise ValueError(msg)
+    def __init__(self, view_name=None, **kwargs):
+        assert view_name is not None, 'The `view_name` argument is required.'
+        self.view_name = view_name
+        self.lookup_field = kwargs.pop('lookup_field', self.lookup_field)
+        self.lookup_url_kwarg = kwargs.pop('lookup_url_kwarg', self.lookup_field)
+        self.format = kwargs.pop('format', None)
 
         self.additional_links = kwargs.pop('additional_links', {})
-        self.exclude = kwargs.pop('exclude', ())
 
-        self.format = kwargs.pop('format', None)
-        lookup_field = kwargs.pop('lookup_field', None)
-        self.lookup_field = lookup_field or self.lookup_field
+        # We include these simply for dependency injection in tests.
+        # We can't add them as class attributes or they would expect an
+        # implicit `self` argument to be passed.
+        self.reverse = reverse
+        self.resolve = resolve
 
-        super(HALLinksField, self).__init__(*args, **kwargs)
+        super(HALLinksField, self).__init__(view_name, **kwargs)
 
-    def field_to_native(self, obj, field_name):
+    def to_representation(self, value):
         request = self.context.get('request', None)
         format = self.context.get('format', None)
         view_name = self.view_name
@@ -120,7 +121,7 @@ class HALLinksField(Field):
 
         # Return the hyperlink, or error if incorrectly configured.
         try:
-            self_link = self.get_url(obj, view_name, request, format)
+            self_link = self.get_url(value, view_name, request, format)
         except NoReverseMatch:
             msg = (
                 'Could not resolve URL for hyperlinked relationship using '
@@ -138,11 +139,11 @@ class HALLinksField(Field):
         for key, field in self.additional_links.items():
             field.initialize(parent=self, field_name=key)
             if field.many:
-                links = field.field_to_native(obj, key)
+                links = field.field_to_native(value, key)
                 ret[key] = [{'href': link} for link in links]
             else:
                 ret[key] = {
-                    'href': field.field_to_native(obj, key)
+                    'href': field.field_to_native(value, key)
                 }
         return ret
 
