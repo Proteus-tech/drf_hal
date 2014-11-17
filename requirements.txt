@@ -1,5 +1,5 @@
 django==1.7
-djangorestframework==2.3.12
+https://github.com/tomchristie/django-rest-framework/archive/master.zip
 simplejson>=3.3.3
 coverage>=3.7.1
 django-nose>=1.2
