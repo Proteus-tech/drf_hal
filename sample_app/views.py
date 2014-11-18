@@ -11,7 +11,7 @@ from sample_app.serializers import ChoiceSerializer, ChoiceExcludePollSerializer
 
 
 class ChoiceRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
-    model = Choice
+    queryset = Choice.objects.all()
 
     def get_serializer_class(self):
         query_params = self.request.QUERY_PARAMS
