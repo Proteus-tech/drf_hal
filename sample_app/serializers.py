@@ -110,7 +110,7 @@ class UserSerializer(HALModelSerializer):
 
 
 class UserProfileSerializer(HALModelSerializer):
-    user = HyperlinkedRelatedField(view_name='user-detail', lookup_field='username')
+    user = HyperlinkedRelatedField(view_name='user-detail', lookup_field='username', read_only=True)
 
     class Meta:
         model = UserProfile
