@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.contrib.auth.models import User
 
 from django.db import models
 
@@ -21,3 +22,7 @@ class Partner(models.Model):
 class Channel(models.Model):
     name = models.CharField(max_length=100, unique=True, blank=False, null=False)
     partner = models.ManyToManyField(Partner, null=True)
+
+
+class UserProfile(models.Model):
+    user = models.ForeignKey(User, related_name='profile')

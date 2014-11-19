@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.relations import HyperlinkedRelatedField
 
 from drf_hal.pagination import HALPaginationSerializer
 from drf_hal.serializers import HALModelSerializer
-from sample_app.models import Choice, Poll, Channel, Partner
+from sample_app.models import Choice, Poll, Channel, Partner, UserProfile
 
 
 class PollSerializer(HALModelSerializer):
@@ -98,3 +100,18 @@ class PartnerSerializer(HALModelSerializer):
     class Meta:
         model = Partner
         lookup_field = 'pk'
+
+
+class UserSerializer(HALModelSerializer):
+
+    class Meta:
+        model = get_user_model()
+        lookup_field = 'username'
+
+
+class UserProfileSerializer(HALModelSerializer):
+    user = HyperlinkedRelatedField(view_name='user-detail', lookup_field='username')
+
+    class Meta:
+        model = UserProfile
+        lookup_field = 'user__username'
