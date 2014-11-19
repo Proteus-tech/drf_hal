@@ -48,33 +48,6 @@ class HALModelSerializer(ModelSerializer):
         }
         return self._default_view_name % format_kwargs
 
-    def get_related_field(self, model_field, related_model, to_many):
-        """
-        Creates a default instance of a flat relational field.
-        """
-        # TODO: filter queryset using:
-        # .using(db).complex_filter(self.rel.limit_choices_to)
-        kwargs = {
-            'queryset': related_model._default_manager,
-            'view_name': self._get_default_view_name(related_model),
-            'many': to_many
-        }
-
-        if model_field:
-            kwargs['required'] = not(model_field.null or model_field.blank)
-
-        return self._hyperlink_field_class(**kwargs)
-
-    def get_identity(self, data):
-        """
-        This hook is required for bulk update.
-        We need to override the default, to use the _links as the identity.
-        """
-        try:
-            return data.get('_links', None) and data['_links'].get('self') and data['_links']['self'].get('href')
-        except AttributeError:
-            return None
-
     def get_fields(self):
         declared_fields = copy.deepcopy(self._declared_fields)
 
@@ -270,7 +243,8 @@ class HALModelSerializer(ModelSerializer):
 
             if is_links_field:
                 links_field.update_item(field_name, field_cls(**kwargs))
-            elif is_embedded_field:
+
+            if is_embedded_field:
                 embedded_field.update_item(field_name, field_cls(**kwargs))
             else:
                 # Create the serializer field.

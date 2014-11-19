@@ -20,4 +20,4 @@ class Partner(models.Model):
 
 class Channel(models.Model):
     name = models.CharField(max_length=100, unique=True, blank=False, null=False)
-    partner = models.ManyToManyField(Partner, null=True)
+    partners = models.ManyToManyField(Partner, null=True)

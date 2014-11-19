@@ -77,7 +77,6 @@ class HALLinksField(Field):
     Represents the instance, or a property on the instance, using hyperlinking.
     """
     lookup_field = 'pk'
-    read_only = True
 
     def __init__(self, view_name=None, **kwargs):
         assert view_name is not None, 'The `view_name` argument is required.'
@@ -89,6 +88,8 @@ class HALLinksField(Field):
         self.additional_links = kwargs.pop('additional_links', {})
 
         super(HALLinksField, self).__init__(view_name, **kwargs)
+
+        self.read_only = True
 
     def update_item(self, field_name, field):
         self.additional_links.update({field_name: field})
@@ -136,8 +137,8 @@ class HALLinksField(Field):
         for key, field in self.additional_links.items():
             field.bind(key, self.parent)
             if isinstance(field, ManyRelatedField):
-                links = field.to_representation(value)
-                ret[key] = [{'href': link} for link in links]
+                attribute = field.get_attribute(value)
+                ret[key] = field.to_representation(attribute)
             else:
                 ret[key] = {
                     'href': field.to_representation(value)
@@ -192,8 +193,9 @@ class HALEmbeddedFieldValidationError(ValidationError):
 class HALEmbeddedField(Field):
 
     def __init__(self, *args, **kwargs):
-        self.embedded_fields = {}
         super(HALEmbeddedField, self).__init__(*args, **kwargs)
+        self.embedded_fields = {}
+        self.read_only = True
 
     def bind(self, field_name, parent):
         [field.bind(name, parent) for name, field in self.embedded_fields.items()]

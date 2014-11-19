@@ -244,16 +244,14 @@ class TestCreatePollAPIView(TestCase):
         self.data = dict(
             question='What is your favorite animal?',
             pub_date='2014-03-01T00:00:00Z',
-            _embedded=dict(
-                choices=[
-                    {
-                        'choice_text': 'cat',
-                    },
-                    {
-                        'choice_text': 'dog'
-                    }
-                ]
-            )
+            choices=[
+                {
+                    'choice_text': 'cat',
+                },
+                {
+                    'choice_text': 'dog'
+                }
+            ]
         )
         self.test_uri = '/poll_with_choices'
 
@@ -267,10 +265,11 @@ class TestCreatePollAPIView(TestCase):
         self.assertEqual(choices[1].choice_text, self.data['_embedded']['choices'][1]['choice_text'])
 
     def test_create_poll_with_choices_no_choice(self):
-        del self.data['_embedded']
+        del self.data['choices']
         response = self.client.post(self.test_uri, simplejson.dumps(self.data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
         content = simplejson.loads(response.content)
+        print content
         self.assertEqual(content['choices'], ["This field is required."])
 
 
@@ -280,7 +279,7 @@ class TestCreateChannelAPIView(TestCase):
         self.partner_uri = 'http://testserver%s' % reverse('partner-detail', kwargs={'pk': self.partner.pk})
 
         self.data = {
-            'partner': [self.partner_uri],
+            'partners': [self.partner_uri],
             'name': 'ABC'
         }
         self.test_uri = reverse('create-channel')
@@ -295,5 +294,5 @@ class TestCreateChannelAPIView(TestCase):
         _links = content['_links']
         self.assertDictEqual(_links['self'], {'href': 'http://testserver%s' % reverse('channel-detail',
                                                                                      kwargs={'pk': saved_channel.pk})})
-        self.assertEqual(_links['partner'], [{'href': self.partner_uri}])
+        self.assertEqual(_links['partners'], [{'href': self.partner_uri}])
         self.assertEqual(content['name'], saved_channel.name)
