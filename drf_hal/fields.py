@@ -203,6 +203,8 @@ class HALEmbeddedField(Field):
         ret = {}
         for field_name, field in self.embedded_fields.items():
             attribute = field.get_attribute(value)
+            if getattr(field, 'many', None):
+                attribute = attribute.all()
             if attribute is None:
                 value = None
             else:

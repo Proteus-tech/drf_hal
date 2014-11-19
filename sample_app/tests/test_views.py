@@ -2,7 +2,6 @@
 from datetime import date
 
 from django.contrib.auth import get_user_model
-
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 import simplejson
@@ -263,8 +262,8 @@ class TestCreatePollAPIView(TestCase):
         poll = Poll.objects.get(question=self.data['question'])
         choices = Choice.objects.filter(poll=poll)
         self.assertEqual(choices.count(), 2)
-        self.assertEqual(choices[0].choice_text, self.data['_embedded']['choices'][0]['choice_text'])
-        self.assertEqual(choices[1].choice_text, self.data['_embedded']['choices'][1]['choice_text'])
+        self.assertEqual(choices[0].choice_text, self.data['choices'][0]['choice_text'])
+        self.assertEqual(choices[1].choice_text, self.data['choices'][1]['choice_text'])
 
     def test_create_poll_with_choices_no_choice(self):
         del self.data['choices']
