@@ -91,9 +91,6 @@ class HALLinksField(Field):
 
         self.read_only = True
 
-    def update_item(self, field_name, field):
-        self.additional_links.update({field_name: field})
-
     def to_representation(self, value):
         request = self.context.get('request', None)
         format = self.context.get('format', None)
@@ -192,12 +189,11 @@ class HALEmbeddedFieldValidationError(ValidationError):
 class HALEmbeddedField(Field):
 
     def __init__(self, *args, **kwargs):
-        super(HALEmbeddedField, self).__init__(*args, **kwargs)
-        self.embedded_fields = {}
-        self.read_only = True
+        self.embedded_fields = kwargs.pop('embedded_fields', {})
 
-    def update_item(self, field_name, field):
-        self.embedded_fields[field_name] = field
+        super(HALEmbeddedField, self).__init__(*args, **kwargs)
+
+        self.read_only = True
 
     def to_representation(self, value):
         ret = {}

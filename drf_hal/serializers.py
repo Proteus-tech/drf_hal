@@ -36,6 +36,11 @@ class HALModelSerializer(ModelSerializer):
     _default_view_name = '%(model_name)s-detail'
     _related_class = HyperlinkedRelatedField
 
+    def __init__(self, *args, **kwargs):
+        self.additional_links = {}
+        self.embedded_fields = {}
+        super(HALModelSerializer, self).__init__(*args, **kwargs)
+
     def __save_related_field(self, instance, field_name, data):
         related_field = getattr(instance, field_name)
         if isinstance(data, dict):
@@ -107,25 +112,6 @@ class HALModelSerializer(ModelSerializer):
         assert not (fields and exclude), "Cannot set both 'fields' and 'exclude'."
 
         extra_kwargs = self._include_additional_options(extra_kwargs)
-
-        # Setup _links field
-        if not extra_kwargs.get('url'):
-            extra_kwargs['url'] = {}
-        if not extra_kwargs['url'].get('lookup_field'):
-            extra_kwargs['url']['lookup_field'] = 'pk'
-
-        if extra_kwargs.get('url') and extra_kwargs['url'].get('view_name'):
-            view_name = extra_kwargs['url']['view_name']
-        else:
-            view_name = self._get_default_view_name(self.Meta.model)
-        links_field = HALLinksField(
-            view_name=view_name,
-            lookup_field=extra_kwargs['url']['lookup_field'],
-        )
-        ret['_links'] = links_field
-
-        embedded_field = HALEmbeddedField()
-        ret['_embedded'] = embedded_field
 
         # Retrieve metadata about fields & relationships on the model class.
         info = model_meta.get_field_info(model)
@@ -210,7 +196,7 @@ class HALModelSerializer(ModelSerializer):
 
             if field_name in declared_fields:
                 if info.relations:
-                    embedded_field.update_item(field_name, declared_fields[field_name])
+                    self.embedded_fields[field_name] = declared_fields[field_name]
                 ret[field_name] = declared_fields[field_name]
                 continue
 
@@ -282,16 +268,38 @@ class HALModelSerializer(ModelSerializer):
             kwargs.update(extras)
 
             if is_links_field:
-                links_field.update_item(field_name, field_cls(**kwargs))
+                self.additional_links[field_name] = field_cls(**kwargs)
 
             if is_embedded_field:
-                embedded_field.update_item(field_name, field_cls(**kwargs))
+                self.embedded_fields[field_name] = field_cls(**kwargs)
 
             # Create the serializer field.
             ret[field_name] = field_cls(**kwargs)
 
         for field_name, field in unique_fields.items():
             ret[field_name] = field
+
+        # Setup _links field
+        if not extra_kwargs.get('url'):
+            extra_kwargs['url'] = {}
+        if not extra_kwargs['url'].get('lookup_field'):
+            extra_kwargs['url']['lookup_field'] = 'pk'
+
+        if extra_kwargs.get('url') and extra_kwargs['url'].get('view_name'):
+            view_name = extra_kwargs['url']['view_name']
+        else:
+            view_name = self._get_default_view_name(self.Meta.model)
+        links_field = HALLinksField(
+            view_name=view_name,
+            lookup_field=extra_kwargs['url']['lookup_field'],
+            additional_links=self.additional_links
+        )
+        ret['_links'] = links_field
+
+        embedded_field = HALEmbeddedField(
+            embedded_fields=self.embedded_fields
+        )
+        ret['_embedded'] = embedded_field
 
         return ret
 
@@ -303,6 +311,10 @@ class HALModelSerializer(ModelSerializer):
         fields = [field for field in self.fields.values() if not field.write_only]
 
         for field in fields:
+            if field.field_name in self.additional_links.keys() or \
+               field.field_name in self.embedded_fields.keys():
+                # these will be taken care by the respective HAL fields already
+                continue
             if field.field_name in HALfields:
                 value = field.to_representation(instance)
             else:
