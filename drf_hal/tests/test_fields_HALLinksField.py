@@ -102,8 +102,9 @@ class TestHALLinksFieldFieldToNative(TestCase):
 
 class TestHALLinksFieldGetUrl(TestCase):
     def setUp(self):
-        self.patch_reverse = patch('rest_framework.reverse.reverse')
-        self.mock_reverse = self.patch_reverse.start()
+        patch_reverse = patch('rest_framework.reverse.reverse')
+        self.addCleanup(patch_reverse.stop)
+        self.mock_reverse = patch_reverse.start()
 
         self.view_name = 'poll-detail'
         self.links_format = 'xml'
@@ -115,9 +116,6 @@ class TestHALLinksFieldGetUrl(TestCase):
 
         self.obj = Mock()
         self.request = Request(HttpRequest())
-
-    def tearDown(self):
-        self.patch_reverse.stop()
 
     def test_get_url_successful(self):
         expected_url =  'http://yeah/url'

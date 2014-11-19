@@ -2,10 +2,10 @@
 import warnings
 
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import NoReverseMatch, resolve
+from django.core.urlresolvers import NoReverseMatch
 from rest_framework.fields import Field
 from rest_framework import reverse
-from rest_framework.relations import HyperlinkedRelatedField
+from rest_framework.relations import HyperlinkedRelatedField, ManyRelatedField
 
 
 class HALLinkField(Field):
@@ -88,13 +88,10 @@ class HALLinksField(Field):
 
         self.additional_links = kwargs.pop('additional_links', {})
 
-        # We include these simply for dependency injection in tests.
-        # We can't add them as class attributes or they would expect an
-        # implicit `self` argument to be passed.
-        self.reverse = reverse
-        self.resolve = resolve
-
         super(HALLinksField, self).__init__(view_name, **kwargs)
+
+    def update_links_item(self, field_name, field):
+        self.additional_links.update({field_name: field})
 
     def to_representation(self, value):
         request = self.context.get('request', None)
@@ -137,13 +134,13 @@ class HALLinksField(Field):
             }
         }
         for key, field in self.additional_links.items():
-            field.initialize(parent=self, field_name=key)
-            if field.many:
-                links = field.field_to_native(value, key)
+            field.bind(key, self.parent)
+            if isinstance(field, ManyRelatedField):
+                links = field.to_representation(value)
                 ret[key] = [{'href': link} for link in links]
             else:
                 ret[key] = {
-                    'href': field.field_to_native(value, key)
+                    'href': field.to_representation(value)
                 }
         return ret
 
