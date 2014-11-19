@@ -167,7 +167,6 @@ class HALLinksField(Field):
             lookup_fields = self.lookup_field
             kwargs = {}
             for lookup_field in lookup_fields:
-                split_lookup_field = lookup_field.split('__')
                 kwargs[lookup_field] = self.__get_lookup_value(obj, lookup_field)
         else:
             lookup_field = self.__get_lookup_value(obj, self.lookup_field)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import FieldDoesNotExist
-from rest_framework.relations import HyperlinkedRelatedField, HyperlinkedIdentityField
+from rest_framework.relations import HyperlinkedRelatedField
 
 from rest_framework.serializers import ModelSerializer
 
@@ -21,8 +21,7 @@ from rest_framework.fields import *  # NOQA
 #         super(HALModelSerializerOptions, self).__init__(meta)
 #         self.additional_embedded = getattr(meta, 'additional_embedded', None)
 from rest_framework.utils import model_meta
-from rest_framework.utils.field_mapping import get_field_kwargs, get_nested_relation_kwargs, get_relation_kwargs, \
-    get_url_kwargs
+from rest_framework.utils.field_mapping import get_field_kwargs, get_nested_relation_kwargs, get_relation_kwargs
 from drf_hal.fields import HALLinksField, HALEmbeddedField
 
 
@@ -207,11 +206,6 @@ class HALModelSerializer(ModelSerializer):
                 # Create a read only field for model methods and properties.
                 field_cls = ReadOnlyField
                 kwargs = {}
-
-            elif field_name == api_settings.URL_FIELD_NAME:
-                # Create the URL field.
-                field_cls = HyperlinkedIdentityField
-                kwargs = get_url_kwargs(model)
 
             else:
                 raise ImproperlyConfigured(
