@@ -56,7 +56,7 @@ class PollRetrieveListAPIView(ListAPIView):
 
 
 class PollChoiceRetrieveUpdateDestroyAPIView(MultipleLookupFieldsMixin, RetrieveUpdateDestroyAPIView):
-    model = Choice
+    queryset = Choice.objects.all()
     lookup_field = ('poll__pk', 'pk')
     serializer_class = PollChoiceSerializer
 
@@ -72,6 +72,7 @@ class PollChoiceCreateAPIView(CreateAPIView):
 
 class PollListAPIView(ListAPIView):
     model = Poll
+    queryset = Poll.objects.all()
     serializer_class = PollSerializer
     paginate_by = 10
     paginate_by_param = 'page_size'
