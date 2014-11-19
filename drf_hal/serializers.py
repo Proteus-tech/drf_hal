@@ -145,7 +145,11 @@ class HALModelSerializer(ModelSerializer):
                 self.add_field_to_embedded(model_field.name, self.get_nested_field(model_field, related_model, to_many))
             elif model_field.rel and model_field.name in base_fields:
                 key = model_field.name
-                self.add_field_to_embedded(key, base_fields[key])
+                field = base_fields[key]
+                if isinstance(field, HyperlinkedRelatedField):
+                    self.add_field_to_links(key, field)
+                else:
+                    self.add_field_to_embedded(key, field)
                 base_fields.pop(key)
             elif model_field.rel:
                 self.add_field_to_links(model_field.name, self.get_related_field(model_field, related_model, to_many))
