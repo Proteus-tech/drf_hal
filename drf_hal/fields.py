@@ -196,10 +196,6 @@ class HALEmbeddedField(Field):
         self.embedded_fields = {}
         self.read_only = True
 
-    def bind(self, field_name, parent):
-        [field.bind(name, parent) for name, field in self.embedded_fields.items()]
-        return super(HALEmbeddedField, self).bind(field_name, parent)
-
     def update_item(self, field_name, field):
         self.embedded_fields[field_name] = field
 

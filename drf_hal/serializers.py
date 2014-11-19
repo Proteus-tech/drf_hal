@@ -3,7 +3,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db.models import FieldDoesNotExist
 from rest_framework.relations import HyperlinkedRelatedField
 
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, BaseSerializer
 
 # COPIED FROM DRF
 # Note: We do the following so that users of the framework can use this style:
@@ -35,6 +35,53 @@ class HALModelSerializer(ModelSerializer):
     # _options_class = HALModelSerializerOptions
     _default_view_name = '%(model_name)s-detail'
     _related_class = HyperlinkedRelatedField
+
+    def __save_related_field(self, instance, field_name, data):
+        related_field = getattr(instance, field_name)
+        if isinstance(data, dict):
+            related_field.create(**data)
+        else:
+            related_field.add(data)
+
+    def create(self, validated_attrs):
+        ModelClass = self.Meta.model
+
+        # Remove many-to-many relationships from validated_attrs.
+        # They are not valid arguments to the default `.create()` method,
+        # as they require that the instance has already been saved.
+        info = model_meta.get_field_info(ModelClass)
+        to_many = {}
+        related = {}
+        for field_name, relation_info in info.relations.items():
+            if relation_info.to_many and field_name in validated_attrs:
+                to_many[field_name] = validated_attrs.pop(field_name)
+
+        instance = ModelClass.objects.create(**validated_attrs)
+
+        for field_name, value in to_many.items():
+            if isinstance(value, list):
+                for item in value:
+                    self.__save_related_field(instance, field_name, item)
+            else:
+                self.__save_related_field(instance, field_name, value)
+
+        return instance
+
+    def update(self, instance, validated_attrs):
+        assert not any(
+            isinstance(field, BaseSerializer) and not field.read_only
+            for field in self.fields.values()
+        ), (
+            'The `.update()` method does not suport nested writable fields '
+            'by default. Write an explicit `.update()` method for serializer '
+            '`%s.%s`, or set `read_only=True` on nested serializer fields.' %
+            (self.__class__.__module__, self.__class__.__name__)
+        )
+
+        for attr, value in validated_attrs.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
 
     def _get_default_view_name(self, model):
         """
@@ -164,8 +211,7 @@ class HALModelSerializer(ModelSerializer):
             if field_name in declared_fields:
                 if info.relations:
                     embedded_field.update_item(field_name, declared_fields[field_name])
-                else:
-                    ret[field_name] = declared_fields[field_name]
+                ret[field_name] = declared_fields[field_name]
                 continue
 
             elif field_name in info.fields_and_pk:
@@ -240,9 +286,9 @@ class HALModelSerializer(ModelSerializer):
 
             if is_embedded_field:
                 embedded_field.update_item(field_name, field_cls(**kwargs))
-            else:
-                # Create the serializer field.
-                ret[field_name] = field_cls(**kwargs)
+
+            # Create the serializer field.
+            ret[field_name] = field_cls(**kwargs)
 
         for field_name, field in unique_fields.items():
             ret[field_name] = field
