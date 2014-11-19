@@ -2,26 +2,11 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import FieldDoesNotExist
 from rest_framework.relations import HyperlinkedRelatedField
-
 from rest_framework.serializers import ModelSerializer, BaseSerializer
-
-# COPIED FROM DRF
-# Note: We do the following so that users of the framework can use this style:
-#
-#     example_field = serializers.CharField(...)
-#
-# This helps keep the separation between model fields, form fields, and
-# serializer fields more explicit.
-
-from rest_framework.fields import *  # NOQA
-
-#
-# class HALModelSerializerOptions(HyperlinkedModelSerializerOptions):
-#     def __init__(self, meta):
-#         super(HALModelSerializerOptions, self).__init__(meta)
-#         self.additional_embedded = getattr(meta, 'additional_embedded', None)
+from rest_framework.fields import *
 from rest_framework.utils import model_meta
 from rest_framework.utils.field_mapping import get_field_kwargs, get_nested_relation_kwargs, get_relation_kwargs
+
 from drf_hal.fields import HALLinksField, HALEmbeddedField
 
 
@@ -32,7 +17,6 @@ class HALModelSerializer(ModelSerializer):
     """
     A subclass of ModelSerializer that follows the HAL specs (http://stateless.co/hal_specification.html).
     """
-    # _options_class = HALModelSerializerOptions
     _default_view_name = '%(model_name)s-detail'
     _related_class = HyperlinkedRelatedField
 

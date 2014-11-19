@@ -36,14 +36,14 @@ class CreatePollWithChoicesAPIView(CreateAPIView):
 
 
 class PollRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
-    model = Poll
+    queryset = Poll.objects.all()
 
     def get_serializer_class(self):
         return PollSerializer
 
 
 class PollWithAdditionalEmbeddedView(RetrieveAPIView):
-    model = Poll
+    queryset = Poll.objects.all()
 
     def get_serializer_class(self):
         return PollWithAdditionalEmbeddedSerializer
@@ -101,6 +101,6 @@ class UserView(RetrieveAPIView):
 
 
 class UserProfileView(RetrieveAPIView):
-    model = UserProfile
+    queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
     lookup_field = 'user__username'

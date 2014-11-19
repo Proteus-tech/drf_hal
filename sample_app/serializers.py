@@ -14,11 +14,10 @@ class PollSerializer(HALModelSerializer):
 
 
 class PollWithAdditionalEmbeddedSerializer(HALModelSerializer):
-    additional_field = serializers.SerializerMethodField('get_additional_field')
+    additional_field = serializers.SerializerMethodField()
 
     class Meta:
         model = Poll
-        additional_embedded = ('additional_field',)
 
     def get_additional_field(self, obj):
         return {'value': 'added on %s' % obj.id}
