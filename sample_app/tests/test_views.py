@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from datetime import date
 
+from django.contrib.auth import get_user_model
+
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 import simplejson
 from dougrain import Document
 
-from sample_app.models import Poll, Choice, Partner, Channel
+from sample_app.models import Poll, Choice, Partner, Channel, UserProfile
 
 
 class TestChoiceView(TestCase):
@@ -296,3 +298,18 @@ class TestCreateChannelAPIView(TestCase):
                                                                                      kwargs={'pk': saved_channel.pk})})
         self.assertEqual(_links['partners'], [{'href': self.partner_uri}])
         self.assertEqual(content['name'], saved_channel.name)
+
+
+class TestUserProfileView(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create_user('testuser', 'test@test.com', 'testuser')
+        UserProfile.objects.create(user=self.user)
+        self.test_uri = reverse('userprofile-detail', kwargs={'user__username': self.user.username})
+
+    def test_get_user_profile(self):
+        response = self.client.get(self.test_uri)
+        self.assertEqual(response.status_code, 200)
+        content = simplejson.loads(response.content)
+        _links = content['_links']
+        self.assertEqual(_links['user']['href'], 'http://testserver{}'.format(reverse('user-detail', kwargs={'username': self.user.username})))

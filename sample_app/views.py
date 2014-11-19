@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
+from django.contrib.auth import get_user_model
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.reverse import reverse
 
 from drf_hal.mixins import MultipleLookupFieldsMixin
-from sample_app.models import Choice, Poll, Channel, Partner
+from sample_app.models import Choice, Poll, Channel, Partner, UserProfile
 from sample_app.serializers import ChoiceSerializer, ChoiceExcludePollSerializer, ChoiceExcludeVotesSerializer, \
     ChoiceEmbedPollSerializer, PollSerializer, ChoiceFieldsPollSerializer, ChoiceLookupFieldPollSerializer, \
     PollChoiceSerializer, PollListSerializer, ChannelSerializer, PartnerSerializer, CreatePollWithChoicesSerializer, \
-    PollWithAdditionalEmbeddedSerializer
+    PollWithAdditionalEmbeddedSerializer, UserSerializer, UserProfileSerializer
 
 
 class ChoiceRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -91,3 +92,14 @@ class PartnerRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     model = Partner
     serializer_class = PartnerSerializer
 
+
+class UserView(RetrieveAPIView):
+    model = get_user_model()
+    serializer_class = UserSerializer
+    lookup_field = 'username'
+
+
+class UserProfileView(RetrieveAPIView):
+    model = UserProfile
+    serializer_class = UserProfileSerializer
+    lookup_field = 'user__username'

@@ -10,4 +10,5 @@ urlpatterns = patterns('',
     url(r'^poll', include('sample_app.poll_urls')),
     url(r'^channel', include('sample_app.channel_urls')),
     url(r'^partner', include('sample_app.partner_urls')),
+    url(r'^user', include('sample_app.user_urls')),
 )
