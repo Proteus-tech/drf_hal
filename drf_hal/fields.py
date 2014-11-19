@@ -90,7 +90,7 @@ class HALLinksField(Field):
 
         super(HALLinksField, self).__init__(view_name, **kwargs)
 
-    def update_links_item(self, field_name, field):
+    def update_item(self, field_name, field):
         self.additional_links.update({field_name: field})
 
     def to_representation(self, value):
@@ -192,29 +192,30 @@ class HALEmbeddedFieldValidationError(ValidationError):
 class HALEmbeddedField(Field):
 
     def __init__(self, *args, **kwargs):
-        self.embedded_fields = kwargs.pop('embedded_fields', {})
-
+        self.embedded_fields = {}
         super(HALEmbeddedField, self).__init__(*args, **kwargs)
 
-    def initialize(self, parent, field_name):
-        [field.initialize(parent, name) for name, field in self.embedded_fields.items()]
-        return super(HALEmbeddedField, self).initialize(parent, field_name)
+    def bind(self, field_name, parent):
+        [field.bind(name, parent) for name, field in self.embedded_fields.items()]
+        return super(HALEmbeddedField, self).bind(field_name, parent)
 
-    def field_to_native(self, obj, field_name):
+    def update_item(self, field_name, field):
+        self.embedded_fields[field_name] = field
+
+    def to_representation(self, value):
         ret = {}
-        [ret.update({key: field.field_to_native(obj, key)}) for key, field in self.embedded_fields.items()]
-        return ret
+        for field_name, field in self.embedded_fields.items():
+            attribute = field.get_attribute(value)
+            if attribute is None:
+                value = None
+            else:
+                value = field.to_representation(attribute)
 
-    def field_from_native(self, data, files, field_name, into):
-        embedded_data = data.get(field_name, {})
-        error_dict = {}
-        for key, field in self.embedded_fields.items():
-            try:
-                field.field_from_native(embedded_data, files, key, into)
-            except ValidationError as err:
-                error_dict[key] = err
-        if error_dict:
-            raise HALEmbeddedFieldValidationError(error_dict)
+            transform_method = getattr(self, 'transform_' + field.field_name, None)
+            if transform_method is not None:
+                value = transform_method(value)
+            ret[field_name] = value
+        return ret
 
 
 

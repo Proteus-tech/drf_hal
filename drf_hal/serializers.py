@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import FieldDoesNotExist
-from rest_framework.relations import RelatedField, HyperlinkedRelatedField, HyperlinkedIdentityField
+from rest_framework.relations import HyperlinkedRelatedField, HyperlinkedIdentityField
 
 from rest_framework.serializers import ModelSerializer
 
@@ -23,10 +23,10 @@ from rest_framework.fields import *  # NOQA
 from rest_framework.utils import model_meta
 from rest_framework.utils.field_mapping import get_field_kwargs, get_nested_relation_kwargs, get_relation_kwargs, \
     get_url_kwargs
-from drf_hal.fields import HALLinksField
+from drf_hal.fields import HALLinksField, HALEmbeddedField
 
 
-HALfields = ['_links', 'embedded']
+HALfields = ['_links', '_embedded']
 
 
 class HALModelSerializer(ModelSerializer):
@@ -36,31 +36,6 @@ class HALModelSerializer(ModelSerializer):
     # _options_class = HALModelSerializerOptions
     _default_view_name = '%(model_name)s-detail'
     _related_class = HyperlinkedRelatedField
-    #
-    #
-    def __init__(self, *args, **kwargs):
-        self.additional_links = {}
-        self.embedded_fields = {}
-
-        super(HALModelSerializer, self).__init__(*args, **kwargs)
-    #
-    #     if self.Meta.view_name is None:
-    #         self.Meta.view_name = self._get_default_view_name(self.opts.model)
-    #
-    #     _links = HALLinksField(
-    #         view_name=self.opts.view_name,
-    #         lookup_field=self.opts.lookup_field,
-    #         additional_links=self.additional_links,
-    #         )
-    #     _links.initialize(self, '_links')
-    #     self.fields['_links'] = _links
-    #
-    #     if self.embedded_fields:
-    #         _embedded = HALEmbeddedField(
-    #             embedded_fields=self.embedded_fields,
-    #             )
-    #         _embedded.initialize(self, '_embedded')
-    #         self.fields['_embedded'] = _embedded
 
     def _get_default_view_name(self, model):
         """
@@ -100,15 +75,6 @@ class HALModelSerializer(ModelSerializer):
         except AttributeError:
             return None
 
-    def add_field_to_links(self, links_field, field_name, field):
-        links_field.update_links_item(field_name, field)
-
-    def add_field_to_embedded(self, field_name, field, has_through_model=False):
-        field.initialize(parent=self, field_name=field_name)
-        if has_through_model:
-            field.read_only = True
-        self.embedded_fields[field_name] = field
-
     def get_fields(self):
         declared_fields = copy.deepcopy(self._declared_fields)
 
@@ -133,11 +99,14 @@ class HALModelSerializer(ModelSerializer):
             view_name = extra_kwargs['url']['view_name']
         else:
             view_name = self._get_default_view_name(self.Meta.model)
-        links_fields = HALLinksField(
+        links_field = HALLinksField(
             view_name=view_name,
             lookup_field=extra_kwargs['url']['lookup_field'],
         )
-        self.fields['_links'] = links_fields
+        ret['_links'] = links_field
+
+        embedded_field = HALEmbeddedField()
+        ret['_embedded'] = embedded_field
 
         # Retrieve metadata about fields & relationships on the model class.
         info = model_meta.get_field_info(model)
@@ -217,11 +186,14 @@ class HALModelSerializer(ModelSerializer):
 
         # Now determine the fields that should be included on the serializer.
         for field_name in fields:
-            is_related_field = False
+            is_links_field = False
+            is_embedded_field = False
 
             if field_name in declared_fields:
-                # Field is explicitly declared on the class, use that.
-                ret[field_name] = declared_fields[field_name]
+                if info.relations:
+                    embedded_field.update_item(field_name, declared_fields[field_name])
+                else:
+                    ret[field_name] = declared_fields[field_name]
                 continue
 
             elif field_name in info.fields_and_pk:
@@ -248,6 +220,7 @@ class HALModelSerializer(ModelSerializer):
                 if depth:
                     field_cls = self._get_nested_class(depth, relation_info)
                     kwargs = get_nested_relation_kwargs(relation_info)
+                    is_embedded_field = True
                 else:
                     field_cls = self._related_class
                     kwargs = get_relation_kwargs(field_name, relation_info)
@@ -255,7 +228,7 @@ class HALModelSerializer(ModelSerializer):
                     if not issubclass(field_cls, HyperlinkedRelatedField):
                         kwargs.pop('view_name', None)
                     else:
-                        is_related_field = True
+                        is_links_field = True
 
             elif hasattr(model, field_name):
                 # Create a read only field for model methods and properties.
@@ -295,12 +268,13 @@ class HALModelSerializer(ModelSerializer):
                     kwargs.pop(attr, None)
             kwargs.update(extras)
 
-            if not is_related_field:
+            if is_links_field:
+                links_field.update_item(field_name, field_cls(**kwargs))
+            elif is_embedded_field:
+                embedded_field.update_item(field_name, field_cls(**kwargs))
+            else:
                 # Create the serializer field.
                 ret[field_name] = field_cls(**kwargs)
-            else:
-                # add to self.additional_links
-                self.add_field_to_links(links_fields, field_name, field_cls(**kwargs))
 
         for field_name, field in unique_fields.items():
             ret[field_name] = field
@@ -322,10 +296,7 @@ class HALModelSerializer(ModelSerializer):
                 if attribute is None:
                     value = None
                 else:
-                    if isinstance(field, RelatedField):
-                        self.add_field_to_links(field.field_name, field)
-                    else:
-                        value = field.to_representation(attribute)
+                    value = field.to_representation(attribute)
 
                 transform_method = getattr(self, 'transform_' + field.field_name, None)
                 if transform_method is not None:
