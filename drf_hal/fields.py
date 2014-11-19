@@ -138,7 +138,7 @@ class HALLinksField(Field):
             field.bind(key, self.parent)
             if isinstance(field, ManyRelatedField):
                 attribute = field.get_attribute(value)
-                ret[key] = field.to_representation(attribute)
+                ret[key] = [{'href': link} for link in field.to_representation(attribute)]
             else:
                 ret[key] = {
                     'href': field.to_representation(value)
