@@ -180,7 +180,11 @@ class HALModelSerializer(ModelSerializer):
 
             if field_name in declared_fields:
                 if info.relations:
-                    self.embedded_fields[field_name] = declared_fields[field_name]
+                    field = declared_fields[field_name]
+                    if not isinstance(field, HyperlinkedRelatedField):
+                        self.embedded_fields[field_name] = field
+                    else:
+                        self.additional_links[field_name] = field
                 ret[field_name] = declared_fields[field_name]
                 continue
 
