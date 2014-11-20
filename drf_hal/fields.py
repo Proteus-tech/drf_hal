@@ -132,13 +132,15 @@ class HALLinksField(Field):
             }
         }
         for key, field in self.additional_links.items():
-            field.bind(key, self.parent)
+            if not field.source:
+                # not previously bound
+                field.bind(key, self.parent)
+            attribute = field.get_attribute(value)
             if isinstance(field, ManyRelatedField):
-                attribute = field.get_attribute(value)
                 ret[key] = [{'href': link} for link in field.to_representation(attribute)]
             else:
                 ret[key] = {
-                    'href': field.to_representation(value)
+                    'href': field.to_representation(attribute)
                 }
         return ret
 
