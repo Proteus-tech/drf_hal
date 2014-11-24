@@ -270,7 +270,6 @@ class TestCreatePollAPIView(TestCase):
         response = self.client.post(self.test_uri, simplejson.dumps(self.data), content_type='application/json')
         self.assertEqual(response.status_code, 400)
         content = simplejson.loads(response.content)
-        print content
         self.assertEqual(content['choices'], ["This field is required."])
 
 
