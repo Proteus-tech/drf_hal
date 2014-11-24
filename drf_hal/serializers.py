@@ -185,7 +185,10 @@ class HALModelSerializer(ModelSerializer):
                         self.embedded_fields[field_name] = field
                     else:
                         self.additional_links[field_name] = field
-                ret[field_name] = declared_fields[field_name]
+                if field_name in self.Meta.additional_links:
+                    self.additional_links[field_name] = field
+                else:
+                    ret[field_name] = declared_fields[field_name]
                 continue
 
             elif field_name in info.fields_and_pk:

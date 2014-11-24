@@ -110,7 +110,7 @@ class HALLinksField(Field):
             }
         }
         for key, field in self.additional_links.items():
-            if not field.source:
+            if not field.field_name:
                 # not previously bound
                 field.bind(key, self.parent)
             attribute = field.get_attribute(value)

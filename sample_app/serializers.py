@@ -2,6 +2,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.relations import HyperlinkedRelatedField
+from rest_framework.reverse import reverse
 
 from drf_hal.pagination import HALPaginationSerializer
 from drf_hal.serializers import HALModelSerializer
@@ -114,3 +115,17 @@ class UserProfileSerializer(HALModelSerializer):
     class Meta:
         model = UserProfile
         lookup_field = 'user__username'
+
+
+class UserProfileSerializerMethodLinkSerializer(HALModelSerializer):
+    user = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserProfile
+        lookup_field = 'user__username'
+        additional_links = ('user',)
+
+    def get_user(self, instance):
+        request = self.context.get('request')
+        return reverse('user-detail', kwargs={'username': instance.user.username}, request=request)
+

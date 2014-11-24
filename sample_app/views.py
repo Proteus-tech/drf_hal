@@ -8,7 +8,8 @@ from sample_app.models import Choice, Poll, Channel, Partner, UserProfile
 from sample_app.serializers import ChoiceSerializer, ChoiceExcludePollSerializer, ChoiceExcludeVotesSerializer, \
     ChoiceEmbedPollSerializer, PollSerializer, ChoiceFieldsPollSerializer, ChoiceLookupFieldPollSerializer, \
     PollChoiceSerializer, PollListSerializer, ChannelSerializer, PartnerSerializer, CreatePollWithChoicesSerializer, \
-    PollWithAdditionalEmbeddedSerializer, UserSerializer, UserProfileSerializer
+    PollWithAdditionalEmbeddedSerializer, UserSerializer, UserProfileSerializer, \
+    UserProfileSerializerMethodLinkSerializer
 
 
 class ChoiceRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -103,4 +104,10 @@ class UserView(RetrieveAPIView):
 class UserProfileView(RetrieveAPIView):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
+    lookup_field = 'user__username'
+
+
+class UserProfileSerializerMethodLinkView(RetrieveAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializerMethodLinkSerializer
     lookup_field = 'user__username'
