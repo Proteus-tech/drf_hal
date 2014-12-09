@@ -130,7 +130,6 @@ class HALModelSerializer(ModelSerializer):
         forward_rels += [field for field in opts.many_to_many if field.serialize]
 
         for model_field in forward_rels:
-            field = None
             has_through_model = False
 
             if model_field.rel:
@@ -155,12 +154,11 @@ class HALModelSerializer(ModelSerializer):
                 self.add_field_to_links(model_field.name, self.get_related_field(model_field, related_model, to_many))
             else:
                 field = self.get_field(model_field)
+                if field:
+                    if has_through_model:
+                        field.read_only = True
 
-            if field:
-                if has_through_model:
-                    field.read_only = True
-
-                ret[model_field.name] = field
+                    ret[model_field.name] = field
 
         # Deal with reverse relationships
         reverse_rels = opts.get_all_related_objects()
