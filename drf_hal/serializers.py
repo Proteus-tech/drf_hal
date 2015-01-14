@@ -151,7 +151,8 @@ class HALModelSerializer(ModelSerializer):
                     self.add_field_to_embedded(key, field)
                 base_fields.pop(key)
             elif model_field.rel:
-                self.add_field_to_links(model_field.name, self.get_related_field(model_field, related_model, to_many))
+                if model_field.name not in self.additional_links:
+                    self.add_field_to_links(model_field.name, self.get_related_field(model_field, related_model, to_many))
             else:
                 field = self.get_field(model_field)
                 if field:
