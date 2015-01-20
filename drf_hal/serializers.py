@@ -154,6 +154,9 @@ class HALModelSerializer(ModelSerializer):
                 if model_field.name not in self.additional_links:
                     self.add_field_to_links(model_field.name, self.get_related_field(model_field, related_model, to_many))
             else:
+                if model_field.name in self.additional_links:
+                    # already been added to links
+                    continue
                 field = self.get_field(model_field)
                 if field:
                     if has_through_model:
