@@ -45,13 +45,7 @@ class HALRelatedLinkField(HyperlinkedRelatedField):
         self.format = kwargs.pop('format', None)
         super(HyperlinkedRelatedField, self).__init__(*args, **kwargs)
 
-    def get_url(self, obj, view_name, request, format):
-        """
-        Given an object, return the URL that hyperlinks to the object.
-
-        May raise a `NoReverseMatch` if the `view_name` and `lookup_field`
-        attributes are not configured to correctly match the URL conf.
-        """
+    def _get_kwargs(self, obj):
         kwargs = {}
         if self.lookup_field:
             for lookup_field in self.lookup_field:
@@ -63,13 +57,31 @@ class HALRelatedLinkField(HyperlinkedRelatedField):
                     kwargs[lookup_field] = value
                 else:
                     kwargs[lookup_field] = getattr(obj, lookup_field, None)
+        return kwargs
 
+    def get_url(self, obj, view_name, request, format):
+        """
+        Given an object, return the URL that hyperlinks to the object.
+
+        May raise a `NoReverseMatch` if the `view_name` and `lookup_field`
+        attributes are not configured to correctly match the URL conf.
+        """
+        kwargs = self._get_kwargs(obj)
         try:
             return reverse.reverse(view_name, kwargs=kwargs, request=request, format=format)
         except NoReverseMatch:
             pass
 
         raise NoReverseMatch()
+
+    def get_object(self, queryset, view_name, view_args, view_kwargs):
+        """
+        Return the object corresponding to a matched URL.
+
+        Takes the matched URL conf arguments, and the queryset, and should
+        return an object instance, or raise an `ObjectDoesNotExist` exception.
+        """
+        return queryset.get(**view_kwargs)
 
 
 class HALLinksField(Field):

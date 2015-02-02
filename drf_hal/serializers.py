@@ -9,7 +9,7 @@ from rest_framework.fields import Field
 from rest_framework.relations import HyperlinkedRelatedField
 from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializerOptions, _resolve_model
 
-from drf_hal.fields import HALLinksField, HALEmbeddedField, HALLinkField, HALRelatedLinkField
+from drf_hal.fields import HALLinksField, HALEmbeddedField, HALLinkField
 
 
 class HALModelSerializerOptions(HyperlinkedModelSerializerOptions):
@@ -147,9 +147,10 @@ class HALModelSerializer(ModelSerializer):
                 field = base_fields[key]
                 if isinstance(field, HyperlinkedRelatedField):
                     self.add_field_to_links(key, field)
+                    ret[model_field.name] = field
                 else:
                     self.add_field_to_embedded(key, field)
-                base_fields.pop(key)
+                    base_fields.pop(key)
             elif model_field.rel:
                 if model_field.name not in self.additional_links:
                     self.add_field_to_links(model_field.name, self.get_related_field(model_field, related_model, to_many))
@@ -234,7 +235,7 @@ class HALModelSerializer(ModelSerializer):
         # Get the explicitly declared fields
         base_fields = copy.deepcopy(self.base_fields)
         for key, field in base_fields.items():
-            if isinstance(field, HALLinkField) or isinstance(field, HALRelatedLinkField):
+            if isinstance(field, HALLinkField):
                 self.add_field_to_links(key, field)
             else:
                 ret[key] = field
@@ -307,7 +308,7 @@ class HALModelSerializer(ModelSerializer):
             "Serializer class '%s' is missing 'model' Meta option" % self.__class__.__name__
         opts = get_concrete_model(cls)._meta
         nested = bool(self.opts.depth)
-        for field_name in data.keys():
+        for field_name in copy_data.keys():
             try:
                 model_field_tuple = opts.get_field_by_name(field_name)
                 model_field = model_field_tuple[0]
