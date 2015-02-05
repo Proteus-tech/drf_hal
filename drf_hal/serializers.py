@@ -9,7 +9,7 @@ from rest_framework.fields import Field
 from rest_framework.relations import HyperlinkedRelatedField
 from rest_framework.serializers import ModelSerializer, HyperlinkedModelSerializerOptions, _resolve_model
 
-from drf_hal.fields import HALLinksField, HALEmbeddedField, HALLinkField, HALRelatedLinkField
+from drf_hal.fields import HALLinksField, HALEmbeddedField, HALLinkField
 
 
 class HALModelSerializerOptions(HyperlinkedModelSerializerOptions):
@@ -152,8 +152,10 @@ class HALModelSerializer(ModelSerializer):
                     self.add_field_to_embedded(key, field)
                     base_fields.pop(key)
             elif model_field.rel:
+                field = self.get_related_field(model_field, related_model, to_many)
                 if model_field.name not in self.additional_links:
-                    self.add_field_to_links(model_field.name, self.get_related_field(model_field, related_model, to_many))
+                    self.add_field_to_links(model_field.name, field)
+                ret[model_field.name] = field
             else:
                 if model_field.name in self.additional_links:
                     # already been added to links
@@ -335,7 +337,7 @@ class HALModelSerializer(ModelSerializer):
 
         for field_name, field in self.fields.items():
             if field.read_only and obj is None or \
-               isinstance(field, HALRelatedLinkField):
+               field_name in self.additional_links:
                 continue
             field.initialize(parent=self, field_name=field_name)
             key = self.get_field_key(field_name)
