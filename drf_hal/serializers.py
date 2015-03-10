@@ -147,10 +147,9 @@ class HALModelSerializer(ModelSerializer):
                 field = base_fields[key]
                 if isinstance(field, HyperlinkedRelatedField):
                     self.add_field_to_links(key, field)
-                    ret[model_field.name] = field
                 else:
                     self.add_field_to_embedded(key, field)
-                    base_fields.pop(key)
+                ret[model_field.name] = field
             elif model_field.rel:
                 field = self.get_related_field(model_field, related_model, to_many)
                 if model_field.name not in self.additional_links:
@@ -337,7 +336,8 @@ class HALModelSerializer(ModelSerializer):
 
         for field_name, field in self.fields.items():
             if field.read_only and obj is None or \
-               field_name in self.additional_links:
+                            field_name in self.additional_links or \
+                            field_name in self.embedded_fields:
                 continue
             field.initialize(parent=self, field_name=field_name)
             key = self.get_field_key(field_name)
